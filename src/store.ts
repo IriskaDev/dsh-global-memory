@@ -8,7 +8,7 @@
  * 全部读写仅限 memory 根目录内；路径防穿越由 safeKey/safeCategory 白名单保证。
  */
 import { mkdir, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
-import { mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 
@@ -93,7 +93,9 @@ export function resolveMemoryDir(env: NodeJS.ProcessEnv = process.env): string {
 
 /** key 白名单安全化：删除非法字符，保留 [a-zA-Z0-9_-]；结果为空则报错。 */
 export function safeKey(raw: string): string {
-  const cleaned = String(raw ?? '').trim().replace(/[^a-zA-Z0-9_-]/g, '')
+  const cleaned = String(raw ?? '')
+    .trim()
+    .replace(/[^a-zA-Z0-9_-]/g, '')
   if (!cleaned) throw new MemoryError('memory key 非法：处理后为空，必须包含至少一个 [a-zA-Z0-9_-] 字符')
   return cleaned.slice(0, 64)
 }
@@ -101,7 +103,9 @@ export function safeKey(raw: string): string {
 /** category 白名单安全化：规则同 key，长度 1–32；空值回退 general。 */
 export function safeCategory(raw: string | undefined): string {
   if (raw === undefined || String(raw).trim() === '') return 'general'
-  const cleaned = String(raw).trim().replace(/[^a-zA-Z0-9_-]/g, '')
+  const cleaned = String(raw)
+    .trim()
+    .replace(/[^a-zA-Z0-9_-]/g, '')
   if (!cleaned) throw new MemoryError('memory category 非法：处理后为空')
   return cleaned.slice(0, 32)
 }
@@ -122,14 +126,21 @@ async function readJsonFile<T>(file: string): Promise<T> {
 }
 
 async function writeJsonFileAtomic(file: string, value: unknown): Promise<void> {
-  const tmp = join(dirname(file), `.${basename(file)}.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2)}.tmp`)
+  const tmp = join(
+    dirname(file),
+    `.${basename(file)}.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2)}.tmp`,
+  )
   await writeFile(tmp, JSON.stringify(value, null, 2), 'utf8')
   await rename(tmp, file)
 }
 
 function summarizeContent(content: string, summary?: string): string {
   if (summary !== undefined && String(summary).trim() !== '') return String(summary).trim().slice(0, MAX_SUMMARY_CHARS)
-  const firstLine = content.split(/\r?\n/).map((line) => line.trim()).find((line) => line.length > 0) ?? ''
+  const firstLine =
+    content
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .find((line) => line.length > 0) ?? ''
   return firstLine.slice(0, MAX_SUMMARY_CHARS)
 }
 
@@ -165,7 +176,10 @@ function readJsonFileSync<T>(file: string): T {
 }
 
 function writeJsonFileAtomicSync(file: string, value: unknown): void {
-  const tmp = join(dirname(file), `.${basename(file)}.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2)}.tmp`)
+  const tmp = join(
+    dirname(file),
+    `.${basename(file)}.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2)}.tmp`,
+  )
   writeFileSync(tmp, JSON.stringify(value, null, 2), 'utf8')
   renameSync(tmp, file)
 }
@@ -328,8 +342,14 @@ export async function deleteMemory(dir: string, rawKey: string): Promise<{ ok: t
 }
 
 /** 大小写不敏感子串搜索 key/content/tags，返回带摘要的结果。 */
-export async function searchMemories(dir: string, rawQuery: string, options: SearchOptions = {}): Promise<SearchResult> {
-  const query = String(rawQuery ?? '').trim().toLowerCase()
+export async function searchMemories(
+  dir: string,
+  rawQuery: string,
+  options: SearchOptions = {},
+): Promise<SearchResult> {
+  const query = String(rawQuery ?? '')
+    .trim()
+    .toLowerCase()
   if (!query) throw new MemoryError('query 不能为空')
   const limit = Math.min(Math.max(1, options.limit ?? DEFAULT_SEARCH_LIMIT), MAX_SEARCH_LIMIT)
   const category = options.category === undefined ? undefined : safeCategory(options.category)
@@ -352,7 +372,13 @@ export async function searchMemories(dir: string, rawQuery: string, options: Sea
       }
     }
     if (keyHit || tagHit || contentHit) {
-      results.push({ key: item.key, category: item.category, summary: item.summary, tags: item.tags, updated: item.updated })
+      results.push({
+        key: item.key,
+        category: item.category,
+        summary: item.summary,
+        tags: item.tags,
+        updated: item.updated,
+      })
       if (results.length >= limit) break
     }
   }
@@ -391,7 +417,11 @@ export function renderMemoryIndex(index: MemoryIndex): string {
     const items = groups.get(category)!
     const tagSet = new Set<string>()
     for (const item of items) for (const tag of item.tags) tagSet.add(tag)
-    const tags = [...tagSet].sort().slice(0, 5).map((tag) => `#${tag}`).join(' ')
+    const tags = [...tagSet]
+      .sort()
+      .slice(0, 5)
+      .map((tag) => `#${tag}`)
+      .join(' ')
     lines.push(`- ${category} (${items.length})${tags ? ` ${tags}` : ''}`)
     for (const item of items) lines.push(`  - ${item.key}`)
   }
