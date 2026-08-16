@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  lint-and-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install public devDependencies
+        run: npm install --legacy-peer-deps --no-audit --no-fund
+      - name: Lint
+        run: npm run lint
+      - name: Format check
+        run: npm run format:check
+      - name: Typecheck (skipped)
+        run: echo 'typecheck skipped - private DSH peer deps are not on npm registry'
+      - name: Test (skipped)
+        run: echo 'test skipped - same reason as typecheck'
