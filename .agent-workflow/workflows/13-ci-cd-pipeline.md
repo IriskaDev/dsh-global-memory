@@ -1,5 +1,5 @@
 <!-- MODULE: ci-cd-pipeline -->
-<!-- STATUS: TODO -->
+<!-- STATUS: PARTIAL -->
 <!-- LAST_ANALYZED: 2026-08-17 -->
 <!-- ANALYZER_VERSION: 1.0 -->
 
@@ -13,7 +13,7 @@
 
 <!-- CONTENT_START: overview -->
 
-未检测到任何 CI/CD 配置：无 .github/workflows/、无 .gitlab-ci.yml、无 Jenkinsfile、无 Docker/部署编排。
+已配置基础 CI：`.github/workflows/ci.yml`（GitHub Actions），在 push master 与 pull_request 时运行 lint + format:check；typecheck/test 因 `@deepseek-ai/*` 私有包不在 npm registry 暂不接入。
 
 <!-- CONTENT_END: overview -->
 
@@ -25,8 +25,8 @@
 
 <!-- CONTENT_START: trigger_rules -->
 
-- 无 CI 配置文件 → 无 push/PR 触发规则。
-- 当前质量门禁全部在本地：husky pre-commit + commit-msg（见 11）。
+- 触发规则：`push` 到 `master`、任意 `pull_request`。
+- 本地门禁：husky pre-commit（typecheck+lint+format:check）+ commit-msg（commitlint），见 11。
 
 <!-- CONTENT_END: trigger_rules -->
 
@@ -34,8 +34,8 @@
 
 <!-- CONTENT_START: pipeline_stages -->
 
-- 无远程流水线。
-- 本地等效流程：typecheck → lint → format:check（pre-commit）→ build → test（05）→ commit/push。
+- 远程流水线（GitHub Actions，单 job）：checkout → setup-node 22 → npm install（legacy-peer-deps）→ lint → format:check。
+- typecheck / test 在 CI 中显式跳过（依赖私有包），本地等效流程：typecheck → lint → format:check → build → test。
 
 <!-- CONTENT_END: pipeline_stages -->
 
@@ -45,7 +45,7 @@
 
 <!-- CONTENT_START: automated_checks -->
 
-- 无 CI 自动化检查。
+- CI 自动化检查：`npm run lint` + `npm run format:check`。
 - 本地自动化：.husky/pre-commit（typecheck+lint+format:check）、.husky/commit-msg（commitlint）。
 
 <!-- CONTENT_END: automated_checks -->
@@ -89,7 +89,7 @@
 
 <!-- CONTENT_START: secrets -->
 
-- 无 CI 密钥与变量管理（无 CI 系统）。
+- CI 目前无自定义 secrets / variables；如需接入 typecheck/test，需配置 `@deepseek-ai/*` 私有包源（如 NPM_TOKEN 或私有 registry）。
 - 仓库为 PRIVATE，远端凭据由本机 git/gh 环境管理，无项目内配置。
 
 <!-- CONTENT_END: secrets -->
@@ -100,7 +100,7 @@
 
 <!-- CONTENT_START: troubleshooting -->
 
-- 无 CI 可排查。
+- CI lint/format 失败 → 本地 `npm run lint` / `npm run format:check` 先复现并修复。
 - 构建问题 → 04-build-process.md；测试问题 → 05-testing-process.md；提交门禁问题 → 11-branch-commit.md。
 
 <!-- CONTENT_END: troubleshooting -->
@@ -111,7 +111,7 @@
 
 <!-- CONTENT_START: related_files -->
 
-- 无 CI/CD 相关文件（.github/ 目录不存在）。
+- `.github/workflows/ci.yml` — GitHub Actions 基础 CI（lint + format:check）。
 - 本地门禁参考：.husky/pre-commit、.husky/commit-msg、package.json scripts。
 
 <!-- CONTENT_END: related_files -->
@@ -122,7 +122,7 @@
 
 <!-- CONTENT_START: notes -->
 
-- 13 保持 TODO：项目无 CI/CD 配置，待后续引入（如需可补充 GitHub Actions 跑 typecheck+lint+test）。
+- 13 为 PARTIAL：已有 GitHub Actions 基础 CI；typecheck/test 未接入（`@deepseek-ai/*` 私有包不在 npm registry），待包公开或配置私有源后补。
 - 13 不计入阶段一完善度评分。
 
 <!-- CONTENT_END: notes -->
