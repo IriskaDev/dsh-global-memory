@@ -6,13 +6,13 @@
 
 ## 文件清单
 
-| 文件 | 用途 | 复制目标位置 |
-|------|------|-------------|
-| [`workflow-template.md`](./workflow-template.md) | 工作流文档骨架（流程 SOP / 配置 / 相关文件 / 探测规则） | `.agent-workflow/workflows/<NN>-<name>.md` |
-| [`module-template.md`](./module-template.md) | 业务模块文档骨架（功能 / 数据流 / 接口 / 依赖 / 数据结构） | `.agent-workflow/modules/<module-name>.md` |
-| [`task-feature-template.md`](./task-feature-template.md) | **任务模板**：功能 / 需求开发（含 Step List + 进度日志，支持中断恢复） | `.agent-workflow/tasks/_active/<YYYYMMDD-slug>.md` |
-| [`task-bugfix-template.md`](./task-bugfix-template.md) | **任务模板**：Bug 修复（含复现 / 根因 / 回归测试） | `.agent-workflow/tasks/_active/<YYYYMMDD-slug>.md` |
-| [`task-refactor-template.md`](./task-refactor-template.md) | **任务模板**：重构 / 性能优化（含安全网测试 / 前后指标对比） | `.agent-workflow/tasks/_active/<YYYYMMDD-slug>.md` |
+| 文件                                                       | 用途                                                                   | 复制目标位置                                       |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------- |
+| [`workflow-template.md`](./workflow-template.md)           | 工作流文档骨架（流程 SOP / 配置 / 相关文件 / 探测规则）                | `.agent-workflow/workflows/<NN>-<name>.md`         |
+| [`module-template.md`](./module-template.md)               | 业务模块文档骨架（功能 / 数据流 / 接口 / 依赖 / 数据结构）             | `.agent-workflow/modules/<module-name>.md`         |
+| [`task-feature-template.md`](./task-feature-template.md)   | **任务模板**：功能 / 需求开发（含 Step List + 进度日志，支持中断恢复） | `.agent-workflow/tasks/_active/<YYYYMMDD-slug>.md` |
+| [`task-bugfix-template.md`](./task-bugfix-template.md)     | **任务模板**：Bug 修复（含复现 / 根因 / 回归测试）                     | `.agent-workflow/tasks/_active/<YYYYMMDD-slug>.md` |
+| [`task-refactor-template.md`](./task-refactor-template.md) | **任务模板**：重构 / 性能优化（含安全网测试 / 前后指标对比）           | `.agent-workflow/tasks/_active/<YYYYMMDD-slug>.md` |
 
 ---
 

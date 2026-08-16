@@ -8,10 +8,10 @@
 
 ## 与其他目录的关系
 
-| 目录 | 描述层 | 时间属性 | 数量 |
-|------|-------|---------|------|
-| `workflows/` | **怎么做**（流程 SOP） | 长期稳定 | 固定 13 个 |
-| `modules/` | **是什么**（业务模块） | 中期稳定 | 按业务模块数 |
+| 目录         | 描述层                     | 时间属性         | 数量             |
+| ------------ | -------------------------- | ---------------- | ---------------- |
+| `workflows/` | **怎么做**（流程 SOP）     | 长期稳定         | 固定 13 个       |
+| `modules/`   | **是什么**（业务模块）     | 中期稳定         | 按业务模块数     |
 | **`tasks/`** | **正在做什么**（任务实例） | **短期、一次性** | 每个任务一个文件 |
 
 ---
@@ -39,6 +39,7 @@ YYYYMMDD-<kebab-case-slug>.md
 ```
 
 例如：
+
 - `20260526-add-oauth-login.md`
 - `20260527-fix-payment-deadlock.md`
 - `20260528-refactor-cache-layer.md`
@@ -49,11 +50,11 @@ YYYYMMDD-<kebab-case-slug>.md
 
 任务模板统一放在 [`templates/`](../templates/) 目录：
 
-| 模板文件 | 适用场景 |
-|---------|---------|
-| [`task-feature-template.md`](../templates/task-feature-template.md) | 新功能 / 需求开发 |
-| [`task-bugfix-template.md`](../templates/task-bugfix-template.md) | Bug 修复（含 P0 故障） |
-| [`task-refactor-template.md`](../templates/task-refactor-template.md) | 重构 / 性能优化 |
+| 模板文件                                                              | 适用场景               |
+| --------------------------------------------------------------------- | ---------------------- |
+| [`task-feature-template.md`](../templates/task-feature-template.md)   | 新功能 / 需求开发      |
+| [`task-bugfix-template.md`](../templates/task-bugfix-template.md)     | Bug 修复（含 P0 故障） |
+| [`task-refactor-template.md`](../templates/task-refactor-template.md) | 重构 / 性能优化        |
 
 ---
 
@@ -67,14 +68,14 @@ YYYYMMDD-<kebab-case-slug>.md
 
 ### SOP 速查（5 个步骤 + 1 个前置）
 
-| 步骤 | 关键动作 |
-|:----:|---------|
-| **Step 0**：前置检查 | 读 `AGENTS.md` 的 `LIFECYCLE_PHASE`，未完成阶段一时软阻断（可 `--force` 跳过） |
-| **Step 1**：接到任务（Intake） | 识别类型 → 复制模板 → 填三个必填区块（需求理解 / 影响范围 / Step List）→ 等用户确认 |
-| **Step 2**：执行任务（Execute） | `STATUS=IN_PROGRESS`，每完成一步勾选 + 记日志；遇阻塞 → `BLOCKED`；阻塞解除 → 改回 `IN_PROGRESS` |
-| **Step 3**：中断恢复（Resume） | 扫 `_active/` → 读元数据 + 首个未勾选项 + 近 3 条日志 → 与用户确认起点 |
-| **Step 4**：任务完成（Finalize） | 全部勾选 + 验收过 + PR 已合入 → `DONE` → 移入 `_archive/<YYYY-MM>/`（无需改 AGENTS.md） |
-| **Step 5**：任务废弃（Abandon） | `STATUS=ABANDONED` → 进度日志记原因 → 移入 `_archive/<YYYY-MM>/`（无需改 AGENTS.md） |
+|               步骤               | 关键动作                                                                                         |
+| :------------------------------: | ------------------------------------------------------------------------------------------------ |
+|       **Step 0**：前置检查       | 读 `AGENTS.md` 的 `LIFECYCLE_PHASE`，未完成阶段一时软阻断（可 `--force` 跳过）                   |
+|  **Step 1**：接到任务（Intake）  | 识别类型 → 复制模板 → 填三个必填区块（需求理解 / 影响范围 / Step List）→ 等用户确认              |
+| **Step 2**：执行任务（Execute）  | `STATUS=IN_PROGRESS`，每完成一步勾选 + 记日志；遇阻塞 → `BLOCKED`；阻塞解除 → 改回 `IN_PROGRESS` |
+|  **Step 3**：中断恢复（Resume）  | 扫 `_active/` → 读元数据 + 首个未勾选项 + 近 3 条日志 → 与用户确认起点                           |
+| **Step 4**：任务完成（Finalize） | 全部勾选 + 验收过 + PR 已合入 → `DONE` → 移入 `_archive/<YYYY-MM>/`（无需改 AGENTS.md）          |
+| **Step 5**：任务废弃（Abandon）  | `STATUS=ABANDONED` → 进度日志记原因 → 移入 `_archive/<YYYY-MM>/`（无需改 AGENTS.md）             |
 
 > 详细步骤、mermaid 流程图、硬性约束清单见 [`AGENTS.md`](../../AGENTS.md) 的「📋 任务执行 SOP」章节。
 
@@ -84,13 +85,13 @@ YYYYMMDD-<kebab-case-slug>.md
 
 > 📌 触发指令统一登记在 [`analyzer-instructions.md#约束常量表`](../analyzer-instructions.md#约束常量表ssot--single-source-of-truth) 表 D。本节仅列出本目录最常用的 5 条以便速查；新增触发词请先改表 D（D5.E4 自检规则会校验）。
 
-| 指令 | 说明 |
-|------|------|
-| `创建任务: <描述>` | Agent 识别类型 → 复制模板 → 填充任务文件 → 等用户确认计划 |
-| `继续任务` / `继续任务 <task-id>` | 恢复进行中的任务 |
-| `查看进行中的任务` | 列出 `tasks/_active/` 下所有任务 |
-| `归档任务 <task-id>` | 把任务移入 `_archive/<YYYY-MM>/`（无需修改 `AGENTS.md`，任务列表为动态视图） |
-| `废弃任务 <task-id>` | 标记 `ABANDONED` 并归档 |
+| 指令                              | 说明                                                                         |
+| --------------------------------- | ---------------------------------------------------------------------------- |
+| `创建任务: <描述>`                | Agent 识别类型 → 复制模板 → 填充任务文件 → 等用户确认计划                    |
+| `继续任务` / `继续任务 <task-id>` | 恢复进行中的任务                                                             |
+| `查看进行中的任务`                | 列出 `tasks/_active/` 下所有任务                                             |
+| `归档任务 <task-id>`              | 把任务移入 `_archive/<YYYY-MM>/`（无需修改 `AGENTS.md`，任务列表为动态视图） |
+| `废弃任务 <task-id>`              | 标记 `ABANDONED` 并归档                                                      |
 
 ---
 
@@ -98,16 +99,16 @@ YYYYMMDD-<kebab-case-slug>.md
 
 > 📌 取值集合的唯一真相源：[`analyzer-instructions.md#约束常量表`](../analyzer-instructions.md#约束常量表ssot--single-source-of-truth) 表 A（`TASK_STATUS_ENUM` / `TASK_TYPE_ENUM`）。本表仅做语义说明，不重复定义枚举集合。
 
-| 字段 | 取值 | 含义 |
-|-----|------|------|
-| `STATUS` | `PLANNING` | 已创建任务文件，需求理解 / 影响范围 / 计划尚在讨论 |
-|  | `IN_PROGRESS` | 正在执行 Step List |
-|  | `BLOCKED` | 遇到外部阻塞，等待解除 |
-|  | `DONE` | 全部完成，准备归档 |
-|  | `ABANDONED` | 已废弃 |
-| `TASK_TYPE` | `feature` / `bugfix` / `refactor` | 决定使用哪个模板 |
-| `RELATED_WORKFLOWS` | 如 `03,04,05,11,12` | 引用 `workflows/` 中相关 SOP，便于 Agent 跳转；具体取值见表 A |
-| `BRANCH` | 如 `feature/add-login` | 与 `workflows/11-branch-commit.md` 联动校验 |
+| 字段                | 取值                              | 含义                                                          |
+| ------------------- | --------------------------------- | ------------------------------------------------------------- |
+| `STATUS`            | `PLANNING`                        | 已创建任务文件，需求理解 / 影响范围 / 计划尚在讨论            |
+|                     | `IN_PROGRESS`                     | 正在执行 Step List                                            |
+|                     | `BLOCKED`                         | 遇到外部阻塞，等待解除                                        |
+|                     | `DONE`                            | 全部完成，准备归档                                            |
+|                     | `ABANDONED`                       | 已废弃                                                        |
+| `TASK_TYPE`         | `feature` / `bugfix` / `refactor` | 决定使用哪个模板                                              |
+| `RELATED_WORKFLOWS` | 如 `03,04,05,11,12`               | 引用 `workflows/` 中相关 SOP，便于 Agent 跳转；具体取值见表 A |
+| `BRANCH`            | 如 `feature/add-login`            | 与 `workflows/11-branch-commit.md` 联动校验                   |
 
 ---
 

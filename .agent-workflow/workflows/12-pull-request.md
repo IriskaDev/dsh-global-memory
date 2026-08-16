@@ -1,11 +1,12 @@
 <!-- MODULE: pull-request -->
-<!-- STATUS: TODO -->
-<!-- LAST_ANALYZED: -->
+<!-- STATUS: PARTIAL -->
+<!-- LAST_ANALYZED: 2026-08-17 -->
 <!-- ANALYZER_VERSION: 1.0 -->
 
 # PR 提交与评审流程
 
 > 分为两个独立的 Agent 操作流程：
+>
 > - **Part 1 · PR 提交**：对比分支差异，自动生成完整 PR 描述，通过 gh 提交 PR
 > - **Part 2 · PR 评审**：根据 PR 链接，参照项目规范对变更内容做全面评审并给出评审意见
 
@@ -14,7 +15,11 @@
 ## 概述
 
 <!-- CONTENT_START: overview -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 仓库：github.com/IriskaDev/dsh-global-memory（PRIVATE），使用 gh CLI；PR 默认流向 master。
+- 无 PR 模板、无 CODEOWNERS、无 CI 门禁；PR 描述使用本文件 Step 3 内置模板。
+- feature 分支较大改动按 11 创建；日常小改动在 master 直接提交，不需要 PR。
+
 <!-- CONTENT_END: overview -->
 
 ---
@@ -24,19 +29,28 @@
 ### 审批规则
 
 <!-- CONTENT_START: approval_rules -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 未检测到 CODEOWNERS / 分支保护 / 必要评审人配置。
+- 默认建议：至少仓库 owner（IriskaDev）或用户显式指定评审人确认；正式最小审批人数待手动补充。
+
 <!-- CONTENT_END: approval_rules -->
 
 ### CI 门禁
 
 <!-- CONTENT_START: ci_gates -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 无 CI 配置（无 .github/workflows、无 GitLab CI）。
+- 本地等效门禁（PR 合入前必须）：npm run typecheck、npm run lint、npm run format:check、npm test；commit 已由 husky 强制校验（见 11）。
+
 <!-- CONTENT_END: ci_gates -->
 
 ### 合并策略
 
 <!-- CONTENT_START: merge_strategy -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 未检测到 .mergify / branch protection / 自动合并配置。
+- 合并策略按 GitHub 默认操作；模板推荐在合并前用 git fetch + git rebase origin/master 保持线性历史（见 11 同步主干步骤）。
+
 <!-- CONTENT_END: merge_strategy -->
 
 ---
@@ -64,6 +78,7 @@
 ### Step 1 · 获取分支差异与文件历史
 
 **1.1 获取两分支之间的完整差异**：
+
 ```bash
 git diff <target_branch>...<source_branch>
 # 已推送后也可用：
@@ -71,6 +86,7 @@ gh pr diff <PR编号> --repo <owner>/<repo>
 ```
 
 **1.2 获取源分支的提交历史**：
+
 ```bash
 git log <target_branch>..<source_branch> --oneline
 ```
@@ -78,6 +94,7 @@ git log <target_branch>..<source_branch> --oneline
 **1.3 获取每个变更文件的 git 历史作者**（用于后续自动推荐评审人）：
 
 对 diff 中每个变更文件，查询该文件在目标分支上的最近提交历史，提取：
+
 - **上一任作者**：该文件最近一次提交（非本次 PR 提交人）的 author
 - **主要开发者**：该文件历史提交中提交次数最多的 author（top 1~2）
 
@@ -91,16 +108,16 @@ git log <target_branch>..<source_branch> --oneline
 
 基于 diff 和 commit log，分析以下维度：
 
-| 分析维度 | 说明 |
-|---------|------|
-| **变更类型** | 新功能 / Bug 修复 / 重构 / 文档 / 依赖升级 / 其他 |
-| **涉及模块** | 根据变更文件路径，对应 `.agent-workflow/modules/` 中的模块文档 |
-| **变更范围** | 新增/删除/修改的文件列表，变更行数统计 |
-| **接口变更** | 是否修改了对外接口、公共头文件、导出符号（影响兼容性） |
-| **修改原因** | 从 commit message 和分支名推断，结合模块文档中的背景信息 |
-| **修改分析** | 核心改动逻辑说明，关键代码变更的意图分析 |
-| **修改结果** | 改动达到的效果，新增/修复/优化了什么 |
-| **风险评估** | 变更影响范围，潜在的副作用或需要注意的点 |
+| 分析维度       | 说明                                                                                            |
+| -------------- | ----------------------------------------------------------------------------------------------- |
+| **变更类型**   | 新功能 / Bug 修复 / 重构 / 文档 / 依赖升级 / 其他                                               |
+| **涉及模块**   | 根据变更文件路径，对应 `.agent-workflow/modules/` 中的模块文档                                  |
+| **变更范围**   | 新增/删除/修改的文件列表，变更行数统计                                                          |
+| **接口变更**   | 是否修改了对外接口、公共头文件、导出符号（影响兼容性）                                          |
+| **修改原因**   | 从 commit message 和分支名推断，结合模块文档中的背景信息                                        |
+| **修改分析**   | 核心改动逻辑说明，关键代码变更的意图分析                                                        |
+| **修改结果**   | 改动达到的效果，新增/修复/优化了什么                                                            |
+| **风险评估**   | 变更影响范围，潜在的副作用或需要注意的点                                                        |
 | **推荐评审人** | 基于变更文件历史提取：各文件上一任作者 + 主要开发者（提交最多者），去重后合并项目主要开发者名单 |
 
 ---
@@ -111,6 +128,7 @@ git log <target_branch>..<source_branch> --oneline
 
 ```markdown
 ## 变更类型
+
 - [ ] ✨ 新功能（Feature）
 - [ ] 🐛 Bug 修复（Fix）
 - [ ] ♻️ 代码重构（Refactor）
@@ -119,27 +137,35 @@ git log <target_branch>..<source_branch> --oneline
 - [ ] 🔧 其他（Chore）
 
 ## 修改原因
+
 <!-- 说明为什么要做这次改动：背景、问题、需求来源 -->
 
 ## 修改分析
+
 <!-- 核心改动逻辑说明：改了什么、怎么改的、为什么这样改 -->
 
 ## 修改结果
+
 <!-- 改动达到的效果 -->
 
 ## 影响范围
+
 <!-- 列出受影响的模块/接口/功能，说明是否有兼容性变更 -->
 
 ## 测试结果
+
 <!-- 验证方式和测试结论 -->
 
 ## 关联 Issue
+
 <!-- GitHub Issue 编号 -->
 
 ## 变更文件清单
+
 <!-- Agent 自动填充：列出主要变更文件 -->
 
 ## 推荐评审人
+
 <!-- Agent 自动填充：基于变更文件历史生成，仅供参考，提交时可手动调整 -->
 ```
 
@@ -151,14 +177,15 @@ git log <target_branch>..<source_branch> --oneline
 
 基于 Step 1.3 的文件历史分析结果，按以下规则合并评审人候选列表：
 
-| 来源 | 说明 | 优先级 |
-|------|------|--------|
-| 变更文件上一任作者 | 各变更文件最近一次提交（排除本次 PR 提交人）的 author | 高 |
-| 变更文件主要开发者 | 各变更文件历史提交中提交次数 top 1~2 的 author | 高 |
-| 项目主要开发者 | 来自 [项目说明](../workflows/01-project-overview.md) 中的主要开发者名单 | 中 |
-| 用户手动指定 | 触发指令中显式指定的评审人 | 最高（强制包含） |
+| 来源               | 说明                                                                    | 优先级           |
+| ------------------ | ----------------------------------------------------------------------- | ---------------- |
+| 变更文件上一任作者 | 各变更文件最近一次提交（排除本次 PR 提交人）的 author                   | 高               |
+| 变更文件主要开发者 | 各变更文件历史提交中提交次数 top 1~2 的 author                          | 高               |
+| 项目主要开发者     | 来自 [项目说明](../workflows/01-project-overview.md) 中的主要开发者名单 | 中               |
+| 用户手动指定       | 触发指令中显式指定的评审人                                              | 最高（强制包含） |
 
 **去重规则**：
+
 - 排除 PR 提交人本身
 - 同一个人只保留一次
 - 最终推荐人数建议 2~3 人，超过时优先保留"变更文件作者"
@@ -192,6 +219,7 @@ gh pr create \
 ```
 
 **提交后反馈**：
+
 ```
 PR 已创建：
   标题：xxx
@@ -237,12 +265,12 @@ gh pr diff <PR编号> --repo <owner>/<repo>
 
 根据 PR 涉及的变更文件，加载对应的项目文档作为评审依据：
 
-| 参考资料 | 路径 | 用途 |
-|---------|------|------|
-| 规则限制 | `.agent-workflow/workflows/02-rules-constraints.md` | 编码规范、命名约定、技术限制 |
-| 涉及模块文档 | `.agent-workflow/modules/<module-name>.md` | 模块接口定义、数据结构、设计约定 |
-| 分支提交规范 | `.agent-workflow/workflows/11-branch-commit.md` | commit 格式、分支命名 |
-| 测试流程 | `.agent-workflow/workflows/05-testing-process.md` | 测试要求与覆盖率标准 |
+| 参考资料     | 路径                                                | 用途                             |
+| ------------ | --------------------------------------------------- | -------------------------------- |
+| 规则限制     | `.agent-workflow/workflows/02-rules-constraints.md` | 编码规范、命名约定、技术限制     |
+| 涉及模块文档 | `.agent-workflow/modules/<module-name>.md`          | 模块接口定义、数据结构、设计约定 |
+| 分支提交规范 | `.agent-workflow/workflows/11-branch-commit.md`     | commit 格式、分支命名            |
+| 测试流程     | `.agent-workflow/workflows/05-testing-process.md`   | 测试要求与覆盖率标准             |
 
 ---
 
@@ -251,7 +279,16 @@ gh pr diff <PR编号> --repo <owner>/<repo>
 按以下维度逐一检查变更内容：
 
 <!-- CONTENT_START: review_checklist -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+| 维度      | 检查点                                                  |
+| --------- | ------------------------------------------------------- |
+| 类型/静态 | typecheck、lint、format:check 通过                      |
+| 测试      | npm test 12/12 通过；变更涉及 store 逻辑需有回归用例    |
+| 规范      | 命名与 key/category 白名单符合 02                       |
+| 数据安全  | 读写仅限 $DSH_HOME/memory/，无路径穿越，原子落盘        |
+| 提交      | Conventional Commits（11），分支命名符合 feature/<slug> |
+| 接口兼容  | 修改 MemoryIndex/工具参数 schema 时评估对宿主装配的影响 |
+
 <!-- CONTENT_END: review_checklist -->
 
 ---
@@ -260,12 +297,12 @@ gh pr diff <PR编号> --repo <owner>/<repo>
 
 按严重程度分级输出评审意见：
 
-| 级别 | 含义 | gh 评审命令 |
-|------|------|-----------|
+| 级别                       | 含义                                       | gh 评审命令                      |
+| -------------------------- | ------------------------------------------ | -------------------------------- |
 | 🔴 **必须修改**（Blocker） | 影响正确性/安全性/兼容性，必须修复才能合并 | `gh pr review --request-changes` |
-| 🟠 **建议修改**（Major） | 规范问题或潜在风险，强烈建议修复 | `gh pr review --comment` |
-| 🟡 **可选优化**（Minor） | 代码质量建议，可在本 PR 或后续处理 | `gh pr review --comment` |
-| ✅ **认可**（Approve） | 整体评审通过 | `gh pr review --approve` |
+| 🟠 **建议修改**（Major）   | 规范问题或潜在风险，强烈建议修复           | `gh pr review --comment`         |
+| 🟡 **可选优化**（Minor）   | 代码质量建议，可在本 PR 或后续处理         | `gh pr review --comment`         |
+| ✅ **认可**（Approve）     | 整体评审通过                               | `gh pr review --approve`         |
 
 **通过 gh 提交评审**：
 
@@ -290,11 +327,12 @@ gh pr review <PR编号> --repo <owner>/<repo> --comment --body "整体评审总�
 **总体评价**：通过 / 需修改后重新评审 / 阻塞（需修复 Blocker 问题）
 
 **问题汇总**：
-| 级别 | 数量 | 主要问题 |
-|------|------|---------|
-| 🔴 Blocker | N | xxx |
-| 🟠 Major | N | xxx |
-| 🟡 Minor | N | xxx |
+
+| 级别       | 数量 | 主要问题 |
+| ---------- | ---- | -------- |
+| 🔴 Blocker | N    | xxx      |
+| 🟠 Major   | N    | xxx      |
+| 🟡 Minor   | N    | xxx      |
 
 **评审详情**：已通过 gh / PR 页面提交评论，请查看 PR 评论列表。
 ```
@@ -306,7 +344,11 @@ gh pr review <PR编号> --repo <owner>/<repo> --comment --body "整体评审总�
 > 本项目以 GitHub（`<owner>/<repo>`）为例，使用 `gh` CLI。
 
 <!-- CONTENT_START: github_pr -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- repo：--repo IriskaDev/dsh-global-memory；base 默认 master。
+- 创建：gh pr create --repo IriskaDev/dsh-global-memory --base master --head <source> --title "<type>(<scope>): ..." --body "<Step 3 模板>"
+- 查看/评审：gh pr view <N> --repo IriskaDev/dsh-global-memory、gh pr diff <N> --repo IriskaDev/dsh-global-memory、gh pr review <N> --repo ... --approve|--request-changes|--comment
+
 <!-- CONTENT_END: github_pr -->
 
 ---
@@ -314,7 +356,11 @@ gh pr review <PR编号> --repo <owner>/<repo> --comment --body "整体评审总�
 ## 相关文件
 
 <!-- CONTENT_START: related_files -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- .agent-workflow/workflows/08-code-review.md（Review 标准）
+- .agent-workflow/workflows/11-branch-commit.md（分支与提交规范）
+- .agent-workflow/workflows/05-testing-process.md（测试要求）
+
 <!-- CONTENT_END: related_files -->
 
 ---
@@ -322,7 +368,10 @@ gh pr review <PR编号> --repo <owner>/<repo> --comment --body "整体评审总�
 ## 备注
 
 <!-- CONTENT_START: notes -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 12 为 PARTIAL：PR 操作 SOP 完整（模板内置），但项目级审批规则/CI 门禁/合并策略均未配置，待手动补充。
+- 推荐评审人优先来自文件 git log 作者统计；01 的仓库 owner 作为兜底候选。
+
 <!-- CONTENT_END: notes -->
 
 ---

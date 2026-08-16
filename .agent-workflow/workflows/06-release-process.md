@@ -1,6 +1,6 @@
 ﻿<!-- MODULE: release-process -->
-<!-- STATUS: TODO -->
-<!-- LAST_ANALYZED: -->
+<!-- STATUS: PARTIAL -->
+<!-- LAST_ANALYZED: 2026-08-17 -->
 <!-- ANALYZER_VERSION: 1.0 -->
 
 # 发布流程
@@ -12,7 +12,11 @@
 ## 概述
 
 <!-- CONTENT_START: overview -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 无正式发布流水线与发布工具：未检测到 CHANGELOG、.release-it、changeset、release/deploy scripts。
+- 包为 private（version 0.0.1），分发方式是内部 DSH 装配：dev_build_plugin 构建 + dev_inject_plugin 注入，或 dsh plugin add link:<目录>。
+- 版本号唯一事实源：package.json version。
+
 <!-- CONTENT_END: overview -->
 
 ---
@@ -20,7 +24,14 @@
 ## 版本管理
 
 <!-- CONTENT_START: versioning -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+| 项         | 内容                                                                          |
+| ---------- | ----------------------------------------------------------------------------- |
+| 当前版本   | 0.0.1                                                                         |
+| 版本存储   | package.json（version 字段）                                                  |
+| 版本方案   | SemVer（沿用 Conventional Commits 变更类型映射 MAJOR/MINOR/PATCH 的常规约定） |
+| 自动化工具 | 未检测到 .release-it / changeset / release script                             |
+
 <!-- CONTENT_END: versioning -->
 
 ---
@@ -28,7 +39,11 @@
 ## 环境配置
 
 <!-- CONTENT_START: environments -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 无多环境配置（无 .env.production / .env.staging、无部署平台配置）。
+- 运行时唯一相关环境变量：DSH_HOME（记忆数据目录）；构建备用：DSH_CHECKOUT。
+- “发布目标”= 用户本机 DSH 宿主，非服务器部署。
+
 <!-- CONTENT_END: environments -->
 
 ---
@@ -36,7 +51,10 @@
 ## 变更日志
 
 <!-- CONTENT_START: changelog -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 未检测到 CHANGELOG.md / RELEASES.md，无自动生成工具。
+- 当前可依赖 Conventional Commits 提交历史作为变更记录来源；建议后续补充 CHANGELOG 文件。
+
 <!-- CONTENT_END: changelog -->
 
 ---
@@ -59,7 +77,10 @@
 ### Step 2 · 确认/切换发布分支
 
 <!-- CONTENT_START: release_branch -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 无 release/* 分支策略。分支模型为单 master + 按需 feature/<slug>（见 11）。
+- 版本号变更与发布内容直接在 master 提交；无生产分支概念。
+
 <!-- CONTENT_END: release_branch -->
 
 ---
@@ -67,7 +88,11 @@
 ### Step 3 · 更新版本号
 
 <!-- CONTENT_START: version_bump_cmd -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+# 手动修改 package.json 的 version 字段（无 npm version / release 脚本）
+
+# 建议同步更新 README/相关文档中的版本引用（当前 README 未硬编码版本号）
+
 <!-- CONTENT_END: version_bump_cmd -->
 
 ---
@@ -78,7 +103,9 @@
 - 按 CHANGELOG 格式写入对应版本条目
 
 <!-- CONTENT_START: changelog_cmd -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+未配置 CHANGELOG 生成命令；待手动补充变更记录文件后在此固化命令。
+
 <!-- CONTENT_END: changelog_cmd -->
 
 ---
@@ -88,10 +115,17 @@
 执行全平台编译，确保所有目标平台产物正常（详见 [编译流程](../workflows/04-build-process.md)）：
 
 <!-- CONTENT_START: release_build_cmd -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+npm run build
+
+# DSH 环境备用：bash scripts/build.sh
+
+# 详细命令见 04-build-process.md
+
 <!-- CONTENT_END: release_build_cmd -->
 
 **判断**：
+
 - 所有平台编译通过 → 继续 Step 6
 - 有平台编译失败 → 修复后重新执行，确认全部通过再继续
 
@@ -100,10 +134,15 @@
 ### Step 6 · 运行全量测试
 
 <!-- CONTENT_START: release_test_cmd -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+npm test
+
+# 先 build 再运行 12 个 node:test 用例；详细见 05-testing-process.md
+
 <!-- CONTENT_END: release_test_cmd -->
 
 **判断**：
+
 - 全部通过 → 继续 Step 7
 - 有失败（发布阻塞级）→ 修复后重新走 Step 4~6
 - 有失败（已知存量问题）→ 记录到 CHANGELOG，评估是否可发布
@@ -113,7 +152,13 @@
 ### Step 7 · 打包发布产物
 
 <!-- CONTENT_START: package_cmd -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+# 内部装配（推荐）：dev_build_plugin 构建打包 + dev_inject_plugin 注入
+
+# 或链接安装：dsh plugin add link:<本目录>
+
+# 注：private=true，不执行 npm publish；dev_build_plugin 可产出 tgz 供安装/发布工具使用
+
 <!-- CONTENT_END: package_cmd -->
 
 ---
@@ -121,7 +166,9 @@
 ### Step 8 · 提交版本变更并打 Tag
 
 <!-- CONTENT_START: tag_cmd -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+未检测到 tag 脚本与 tag 命名配置；如需标记版本建议手动执行 git tag v0.0.1 并推送（当前仓库无 release 自动化）。
+
 <!-- CONTENT_END: tag_cmd -->
 
 ---
@@ -129,6 +176,7 @@
 ### Step 9 · 提交发布 PR
 
 参考 [PR 提交流程](../workflows/12-pull-request.md) 创建 PR：
+
 - **release → 生产分支**（合并发布内容）
 - **release → 开发分支**（同步版本号和 CHANGELOG 变更）
 
@@ -139,7 +187,9 @@ PR 描述需包含：版本号、变更摘要、测试结论。
 ### Step 10 · 部署到目标环境
 
 <!-- CONTENT_START: deploy_cmd -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+无部署目标与部署脚本。插件在本机 DSH 宿主中装配即“上线”；无回滚命令，旧版本可通过重新注入对应目录/包回退。
+
 <!-- CONTENT_END: deploy_cmd -->
 
 ---
@@ -151,6 +201,7 @@ PR 描述需包含：版本号、变更摘要、测试结论。
 - 确认本次版本的关键需求已按预期上线
 
 **判断**：
+
 - 验证通过 → 发布完成，在 Issue 中关闭相关单据
 - 发现问题 → 评估严重程度，决定是否回滚或提紧急 Hotfix
 
@@ -161,7 +212,10 @@ PR 描述需包含：版本号、变更摘要、测试结论。
 > 适用于生产环境紧急故障，需跳过常规发布节奏快速上线。
 
 <!-- CONTENT_START: hotfix_release -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 无生产环境，hotfix 等价于紧急 bug 修复：在 master 直接修复（较大改动可 feature 分支）→ npm run build → npm test → Conventional Commit → push。
+- 修复 SOP 见 07-bug-fixing.md；无独立的 hotfix 分支/tag/回滚流水线。
+
 <!-- CONTENT_END: hotfix_release -->
 
 ---
@@ -169,7 +223,11 @@ PR 描述需包含：版本号、变更摘要、测试结论。
 ## 相关文件
 
 <!-- CONTENT_START: related_files -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- package.json（version、scripts、files）
+- README.md（安装/装配方式）
+- scripts/build.sh（DSH 环境构建）
+
 <!-- CONTENT_END: related_files -->
 
 ---
@@ -177,7 +235,10 @@ PR 描述需包含：版本号、变更摘要、测试结论。
 ## 备注
 
 <!-- CONTENT_START: notes -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 发布流程为 PARTIAL：版本事实存在，但缺 CHANGELOG、tag/发布自动化、环境与回滚机制，需用户后续补充。
+- 阶段一完善度评分不包含 06，不影响解锁判定。
+
 <!-- CONTENT_END: notes -->
 
 ---

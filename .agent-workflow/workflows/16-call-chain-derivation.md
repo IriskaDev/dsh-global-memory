@@ -8,6 +8,7 @@
 > 本工作流建立在 [15-module-inventory.md](./15-module-inventory.md) 的模块台账之上，负责从"任意入口点"出发，**利用模块档案的三段依赖关系（上游依赖 / 下游调用方 / 下游数据调用）与入口点章节，推导出跨模块的完整业务调用链**。
 >
 > **核心价值**：Agent 无需 grep 代码，仅凭台账即可回答：
+>
 > - "这条业务从入口到落库经过哪些模块？"
 > - "我改这个接口会影响哪些下游？"
 > - "谁触发了这个数据表的写入？"
@@ -20,6 +21,7 @@
 ## 概述
 
 <!-- CONTENT_START: overview -->
+
 本工作流规定了：
 
 1. **推导前置检查** — 台账时效性硬门禁 + **已推导链路复用检查**（v1.8 新增）
@@ -34,6 +36,7 @@
 > 💡 **v1.7 关键增强**：调用链本质是**图**而非**线**——同一入口在不同条件、扇出、多态下会分叉出多条链路。v1.7 在 Step 2 加入成环剪枝、新增 Step 2.5 明确分叉的语义标签与图形约定，避免不同 Agent 输出的分叉图差异过大。
 >
 > 💡 **v1.8 关键增强**：把推导产物**长期化**为 `.agent-workflow/chains/*.md` 档案。首次推导落档 `STATUS = DERIVED`，用户核对后升级为 `VERIFIED`；沿途模块档案更新时由 15 联动降级为 `STALE`（不自动重推，等用户显式触发）。这样跨会话之间 Agent 可直接复用已推导链路，避免重复扫代码浪费 tokens。
+
 <!-- CONTENT_END: overview -->
 
 ---
@@ -73,11 +76,11 @@
 
 以下场景 Agent **建议**主动执行本流程（非强制）：
 
-| 触发时机 | 应执行的动作 |
-|---------|------------|
-| 用户任务涉及"跨模块联动"关键词（联动 / 全链路 / 端到端 / 影响面 / 波及） | 主动推导链路后再规划改动 |
-| 修改了标注为「🔒 稳定」的对外接口（见模板核心接口章节） | 反向推导影响面并输出给用户 |
-| Bug 修复任务无法在单一模块内定位到根因 | 从 Bug 表现的入口点正向推导 |
+| 触发时机                                                                 | 应执行的动作                |
+| ------------------------------------------------------------------------ | --------------------------- |
+| 用户任务涉及"跨模块联动"关键词（联动 / 全链路 / 端到端 / 影响面 / 波及） | 主动推导链路后再规划改动    |
+| 修改了标注为「🔒 稳定」的对外接口（见模板核心接口章节）                  | 反向推导影响面并输出给用户  |
+| Bug 修复任务无法在单一模块内定位到根因                                   | 从 Bug 表现的入口点正向推导 |
 
 > ⚠️ 与 15 不同，16 **不是**每次代码修改都强制启动，而是"按需"启动。避免为改一行代码就画整张链路图。
 
@@ -87,12 +90,12 @@
 
 推导前必须通过以下四项校验，任一不通过则拒绝执行并向用户说明原因：
 
-| 校验项 | 要求 | 未通过处置 |
-|-------|------|----------|
-| **台账存在** | `.agent-workflow/modules/index.md` 存在且至少有 1 条有效模块行 | 提示用户先执行 [15 Step 3 首次台账建立](./15-module-inventory.md#step-3--首次台账建立流程) |
-| **沿途模块时效** | 推导过程中经过的**每个模块**档案时效状态非 🔴 | 沿途遇 🔴 → 先执行 [15 Step 5 增量更新](./15-module-inventory.md#step-5--增量更新流程自动--手动共用) 再继续 |
-| **推导深度合规** | 用户显式指定深度 ≤ 20，或使用默认深度（5） | 超限时要求用户降级或分段推导 |
-| **已推导链路复用**（v1.8 新增） | 读 `.agent-workflow/chains/index.md`，按 `CHAIN_TYPE + ENTRY_POINT` 精确匹配 → 命中且 `STATUS ∈ {DERIVED, VERIFIED}` → 直接加载复用，跳过 Step 1-5 重推 | 命中 `STALE` → 提示用户是否 `刷新调用链档案 <slug>`；命中 `ABANDONED` → 视为无匹配，走完整推导流程 |
+| 校验项                          | 要求                                                                                                                                                    | 未通过处置                                                                                                  |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **台账存在**                    | `.agent-workflow/modules/index.md` 存在且至少有 1 条有效模块行                                                                                          | 提示用户先执行 [15 Step 3 首次台账建立](./15-module-inventory.md#step-3--首次台账建立流程)                  |
+| **沿途模块时效**                | 推导过程中经过的**每个模块**档案时效状态非 🔴                                                                                                           | 沿途遇 🔴 → 先执行 [15 Step 5 增量更新](./15-module-inventory.md#step-5--增量更新流程自动--手动共用) 再继续 |
+| **推导深度合规**                | 用户显式指定深度 ≤ 20，或使用默认深度（5）                                                                                                              | 超限时要求用户降级或分段推导                                                                                |
+| **已推导链路复用**（v1.8 新增） | 读 `.agent-workflow/chains/index.md`，按 `CHAIN_TYPE + ENTRY_POINT` 精确匹配 → 命中且 `STATUS ∈ {DERIVED, VERIFIED}` → 直接加载复用，跳过 Step 1-5 重推 | 命中 `STALE` → 提示用户是否 `刷新调用链档案 <slug>`；命中 `ABANDONED` → 视为无匹配，走完整推导流程          |
 
 ### 0.4 复用命中处理协议（v1.8 新增）
 
@@ -111,6 +114,7 @@
 ### 1.1 显式指定（最高优先级）
 
 用户直接给出起点，如：
+
 - HTTP 路径 `POST /api/order/create`
 - 函数名 `CreateOrder`
 - MQ topic `topic:order.created`
@@ -209,11 +213,13 @@ while queue 非空:
 ```
 
 **关键澄清（防错向）**：
+
 - 正向链路走的是"当前模块调用别人" → 在档案术语里是「上游依赖」
 - 反向链路走的是"别人调用当前模块" → 在档案术语里是「下游调用方」
 - MQ 发布是本模块主动的动作 → 归入正向传播（通过 `_topics.md` 找订阅方作为下一跳）
 
 **成环剪枝规则（v1.7 硬性要求）**：
+
 - 每次展开新模块前，先检查它是否已在**当前 path**（当前从起点到 current 的路径）中
 - 若已在 → **立即终止该分支**，在图上画到"回到 X"就停止，并加 ⚠️ 成环标注
 - 若不在 path 但在 visited（历史其他分支已展开过）→ 视作"共享子图"，画一条边指向已存在节点，不再二次展开（用 `↩ 已访问` 标注）
@@ -274,13 +280,13 @@ while queue 非空 且 depth < 最大深度:
 
 ### 2.5.1 四类分叉的识别与标注
 
-| 分叉类型 | 识别方式 | 语义 | mermaid 图形约定 |
-|---------|---------|------|-----------------|
-| **条件分叉**（conditional） | 档案「注意事项」或「核心接口」注明 if/switch/策略模式 分派下游；或方法名/字段名带 channel/type/mode 等分派语义 | 运行时**只走一条**，静态推导必须列全 | 使用 mermaid alt/else 语法 + **必须**在分支上标注条件表达式（示例见 2.5.3） |
-| **同步扇出**（sync fan-out） | 档案「上游依赖」中一次调用触发 ≥2 个下游、且是**同步**返回值合并（Promise.all / errgroup / CompletableFuture.allOf 等） | 运行时**同时**走多条，任一失败 → 主链失败 | 每条分支用**实线箭头**，边标签**必须以 `sync:` 前缀**开头（如 `sync: reduce()`） |
-| **异步扇出**（async fan-out） | MQ 一发多订、EventBus 触发多 handler、`go func()` / 线程池并发投递等 | 运行时**同时**走多条，失败降级不影响主链 | 每条分支用**虚线箭头** `--)` 或 `-->>`，边标签**必须以 `async:` 前缀**开头（如 `async: order.paid`） |
-| **多态实现**（polymorphic） | 档案「核心接口」标注了 interface 类型且档案登记了 ≥2 个实现（含 DI 多实现登记） | 静态**无法确定运行时走哪条**，需平行画出所有可能 | 每条分支用**空心菱形箭头**或边标签以 **`possible:` 前缀**开头（如 `possible: MySQLStorage.Save`），并在图上加 `Note over X: ⚠️ 多态分叉` |
-| **事件总线**（event-bus） | 档案「注意事项」或「入口点」明确声明"内存事件总线注册"，非 MQ | 运行时**同时**触发所有订阅 handler，静态需列全 | 与 async fan-out 同规范（虚线 + `async:` 前缀），并额外在起点加 `Note: ⚠️ 事件总线断点，可能有反射注册的 handler 未列出` |
+| 分叉类型                      | 识别方式                                                                                                                | 语义                                             | mermaid 图形约定                                                                                                                         |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **条件分叉**（conditional）   | 档案「注意事项」或「核心接口」注明 if/switch/策略模式 分派下游；或方法名/字段名带 channel/type/mode 等分派语义          | 运行时**只走一条**，静态推导必须列全             | 使用 mermaid alt/else 语法 + **必须**在分支上标注条件表达式（示例见 2.5.3）                                                              |
+| **同步扇出**（sync fan-out）  | 档案「上游依赖」中一次调用触发 ≥2 个下游、且是**同步**返回值合并（Promise.all / errgroup / CompletableFuture.allOf 等） | 运行时**同时**走多条，任一失败 → 主链失败        | 每条分支用**实线箭头**，边标签**必须以 `sync:` 前缀**开头（如 `sync: reduce()`）                                                         |
+| **异步扇出**（async fan-out） | MQ 一发多订、EventBus 触发多 handler、`go func()` / 线程池并发投递等                                                    | 运行时**同时**走多条，失败降级不影响主链         | 每条分支用**虚线箭头** `--)` 或 `-->>`，边标签**必须以 `async:` 前缀**开头（如 `async: order.paid`）                                     |
+| **多态实现**（polymorphic）   | 档案「核心接口」标注了 interface 类型且档案登记了 ≥2 个实现（含 DI 多实现登记）                                         | 静态**无法确定运行时走哪条**，需平行画出所有可能 | 每条分支用**空心菱形箭头**或边标签以 **`possible:` 前缀**开头（如 `possible: MySQLStorage.Save`），并在图上加 `Note over X: ⚠️ 多态分叉` |
+| **事件总线**（event-bus）     | 档案「注意事项」或「入口点」明确声明"内存事件总线注册"，非 MQ                                                           | 运行时**同时**触发所有订阅 handler，静态需列全   | 与 async fan-out 同规范（虚线 + `async:` 前缀），并额外在起点加 `Note: ⚠️ 事件总线断点，可能有反射注册的 handler 未列出`                 |
 
 > 📌 若同一分叉点混合了多种类型（如 event-bus 内部含 conditional），按**外层类型**画主图，内层类型在 Note 中说明。
 
@@ -361,11 +367,11 @@ sequenceDiagram
 
 <!-- LAST_ANALYZED: YYYY-MM-DD -->
 
-| Topic | 消息类型 | 发布方模块 | 订阅方模块 | 关键字段 |
-|-------|---------|-----------|-----------|---------|
-| topic:payment.result | Kafka | payment | order, notification | orderId, status, amount |
-| topic:order.created  | Kafka | order   | inventory, coupon, report | orderId, userId, items |
-| topic:auth.login     | Kafka | auth    | audit, notification | userId, ip, loginType |
+| Topic                | 消息类型 | 发布方模块 | 订阅方模块                | 关键字段                |
+| -------------------- | -------- | ---------- | ------------------------- | ----------------------- |
+| topic:payment.result | Kafka    | payment    | order, notification       | orderId, status, amount |
+| topic:order.created  | Kafka    | order      | inventory, coupon, report | orderId, userId, items  |
+| topic:auth.login     | Kafka    | auth       | audit, notification       | userId, ip, loginType   |
 ```
 
 ### 3.2 生成规则
@@ -395,15 +401,15 @@ sequenceDiagram
 
 以下场景静态扫描无法穿过，Agent 必须**明确标注断点**而不是假装完整：
 
-| 断点类型 | 识别方式 | 标注符号 | 分叉处理（v1.7） |
-|---------|---------|---------|-----------------|
-| **反射调用** | 模块档案「注意事项」中显式声明"通过反射注入"，或代码扫描到反射 API | `⚠️ 反射断点` | 单点断开，不视为分叉 |
-| **DI 容器** | 使用 IoC 容器注入的依赖，档案「上游依赖」标注 `via DI` | `⚠️ DI 断点` | 若 DI 有多实现登记则按 `polymorphic` 处理 |
-| **事件总线** | 内存事件总线（非 MQ），档案「注意事项」显式声明 | `⚠️ 事件总线断点` | 按 Step 2.5 `event-bus` 分叉规范处理，逐一列出订阅者 |
-| **接口多态** | 档案「核心接口」标注了 interface 类型，且档案登记了 ≥2 个实现 | `⚠️ 多态分叉` | 按 Step 2.5 `polymorphic` 分叉规范处理，附「实现清单」表 |
-| **成环** | 展开时发现 current ∈ path（v1.7 新增） | `⚠️ 成环` | 画到"回到 X"停止，边标签 `cycle-back` |
-| **未建档下游** | 遇到 ⚪ 未建档模块 | `⚪ 未建档` | 单点断开 |
-| **数据过期** | 遇到 🔴 已过期模块 | `🔴 数据可能失真` | 单点断开 |
+| 断点类型       | 识别方式                                                           | 标注符号          | 分叉处理（v1.7）                                         |
+| -------------- | ------------------------------------------------------------------ | ----------------- | -------------------------------------------------------- |
+| **反射调用**   | 模块档案「注意事项」中显式声明"通过反射注入"，或代码扫描到反射 API | `⚠️ 反射断点`     | 单点断开，不视为分叉                                     |
+| **DI 容器**    | 使用 IoC 容器注入的依赖，档案「上游依赖」标注 `via DI`             | `⚠️ DI 断点`      | 若 DI 有多实现登记则按 `polymorphic` 处理                |
+| **事件总线**   | 内存事件总线（非 MQ），档案「注意事项」显式声明                    | `⚠️ 事件总线断点` | 按 Step 2.5 `event-bus` 分叉规范处理，逐一列出订阅者     |
+| **接口多态**   | 档案「核心接口」标注了 interface 类型，且档案登记了 ≥2 个实现      | `⚠️ 多态分叉`     | 按 Step 2.5 `polymorphic` 分叉规范处理，附「实现清单」表 |
+| **成环**       | 展开时发现 current ∈ path（v1.7 新增）                             | `⚠️ 成环`         | 画到"回到 X"停止，边标签 `cycle-back`                    |
+| **未建档下游** | 遇到 ⚪ 未建档模块                                                 | `⚪ 未建档`       | 单点断开                                                 |
+| **数据过期**   | 遇到 🔴 已过期模块                                                 | `🔴 数据可能失真` | 单点断开                                                 |
 
 **断点在链路中的表现**：
 
@@ -431,7 +437,7 @@ sequenceDiagram
 
 ### 时序图
 
-​```mermaid
+​`mermaid
 sequenceDiagram
     participant Client
     participant A as A 模块
@@ -442,14 +448,14 @@ sequenceDiagram
     B->>DB: INSERT INTO t_xxx
     B-->>A: result
     A-->>Client: 200 OK
-​```
+​`
 
 ### 沿途外部资源
 
-| 模块 | 数据库表 | Redis Key | MQ Topic | 外部 HTTP |
-|------|---------|-----------|----------|----------|
-| A    | -       | session:* | -        | -        |
-| B    | t_xxx   | -         | topic:xxx (发布) | - |
+| 模块 | 数据库表 | Redis Key | MQ Topic         | 外部 HTTP |
+| ---- | -------- | --------- | ---------------- | --------- |
+| A    | -        | session:* | -                | -         |
+| B    | t_xxx    | -         | topic:xxx (发布) | -         |
 
 ### 断点与风险
 
@@ -467,12 +473,12 @@ sequenceDiagram
 
 ### 影响面清单
 
-| 距离 | 受影响模块 | 使用了哪些接口 | 风险等级 |
-|:----:|-----------|--------------|:--------:|
-| 1 层 | api-gateway | verifyAccessToken (47 处) | 🔴 高 |
-| 1 层 | admin-panel | getMe (12 处) | 🟡 中 |
-| 2 层 | notification | 通过 gateway 间接调用 | 🟢 低 |
-| ...  | ...       | ...          | ...      |
+| 距离 | 受影响模块   | 使用了哪些接口            | 风险等级 |
+| :--: | ------------ | ------------------------- | :------: |
+| 1 层 | api-gateway  | verifyAccessToken (47 处) |  🔴 高   |
+| 1 层 | admin-panel  | getMe (12 处)             |  🟡 中   |
+| 2 层 | notification | 通过 gateway 间接调用     |  🟢 低   |
+| ...  | ...          | ...                       |   ...    |
 
 ### 建议改动策略
 
@@ -490,14 +496,16 @@ sequenceDiagram
 **触达路径深度**：最大 3 层
 
 ### 写入方
-| 模块 | 触发接口 | 入口点 | 频次估计 |
-|------|---------|--------|---------|
-| A    | createXxx | POST /api/xxx | 高 |
-| B    | fixXxx  | CLI: fix-xxx | 极低（运维） |
+
+| 模块 | 触发接口  | 入口点        | 频次估计     |
+| ---- | --------- | ------------- | ------------ |
+| A    | createXxx | POST /api/xxx | 高           |
+| B    | fixXxx    | CLI: fix-xxx  | 极低（运维） |
 
 ### 读取方
-| 模块 | 用途 | 入口点 |
-|------|------|--------|
+
+| 模块 | 用途 | 入口点       |
+| ---- | ---- | ------------ |
 | C    | 展示 | GET /api/xxx |
 ```
 
@@ -505,7 +513,7 @@ sequenceDiagram
 
 > 演示条件分叉 / 同步扇出 / 异步扇出 / 多态 / 成环 5 类混合分叉的完整表达。
 
-```markdown
+````markdown
 ## 调用链推导：POST /api/order/pay（含分叉示例）
 
 **推导范围**：起点 order → 深度 4 跳
@@ -516,16 +524,16 @@ sequenceDiagram
 
 ​```mermaid
 sequenceDiagram
-    participant Client
-    participant Order as order 模块
-    participant Payment as payment 模块
-    participant Wechat as wechat-adapter
-    participant Alipay as alipay-adapter
-    participant Storage as storage (interface)
-    participant MySQL as MySQLStorage (可能)
-    participant Redis as RedisStorage (可能)
-    participant Notify as notification
-    participant Points as points
+participant Client
+participant Order as order 模块
+participant Payment as payment 模块
+participant Wechat as wechat-adapter
+participant Alipay as alipay-adapter
+participant Storage as storage (interface)
+participant MySQL as MySQLStorage (可能)
+participant Redis as RedisStorage (可能)
+participant Notify as notification
+participant Points as points
 
     Client->>Order: POST /api/order/pay
     Order->>Payment: pay(channel)
@@ -545,21 +553,22 @@ sequenceDiagram
     Order--)Notify: async: order.paid（MQ）
     Order--)Points: async: order.paid（MQ）
     Order-->>Client: 200 OK
+
 ​```
 
 ### 分叉分析
 
-| 位置 | 分叉类型 | 关键条件 / 实现 | 影响 |
-|------|---------|----------------|------|
-| Payment.pay | conditional | `channel ∈ {wechat, alipay}` | 运行时二选一，两条分支都需回归测试 |
-| Storage.save | polymorphic | MySQLStorage / RedisStorage | 生产走 MySQL，测试走 Redis，改 interface 需两套实现同步 |
-| Order → 消息发布 | async fan-out | topic:order.paid → notification, points | 失败降级不影响主链，但需监控订阅方消费成功率 |
+| 位置             | 分叉类型      | 关键条件 / 实现                         | 影响                                                    |
+| ---------------- | ------------- | --------------------------------------- | ------------------------------------------------------- |
+| Payment.pay      | conditional   | `channel ∈ {wechat, alipay}`            | 运行时二选一，两条分支都需回归测试                      |
+| Storage.save     | polymorphic   | MySQLStorage / RedisStorage             | 生产走 MySQL，测试走 Redis，改 interface 需两套实现同步 |
+| Order → 消息发布 | async fan-out | topic:order.paid → notification, points | 失败降级不影响主链，但需监控订阅方消费成功率            |
 
 ### 断点与风险
 
 - ⚠️ 多态分叉（Storage）：静态无法确定运行时走 MySQL 还是 Redis，需查配置
 - ⚠️ 异步扇出（order.paid）：订阅方 notification/points 若失败仅告警，不阻塞主链
-```
+````
 
 ---
 
@@ -610,13 +619,13 @@ sequenceDiagram
 
 ### 6.4 STATUS 状态机
 
-| 当前状态 | 事件 | 新状态 | 触发方 |
-|---------|------|-------|-------|
-| （无档案） | 首次推导 | `DERIVED` | Agent（Step 5 落档） |
-| `DERIVED` | 用户回复"确认"或触发 `确认调用链 <slug>` | `VERIFIED` | 用户 |
-| `DERIVED` / `VERIFIED` | 沿途某模块 `LAST_ANALYZED` 变更（15 Step 5.5 联动） | `STALE` | 15 Step 5.5 |
-| `STALE` | 用户触发 `刷新调用链档案 <slug>` | `DERIVED`（等待再次核对） | 用户 |
-| `DERIVED` / `VERIFIED` / `STALE` | 用户触发 `作废调用链 <slug>` | `ABANDONED` | 用户 |
+| 当前状态                         | 事件                                                | 新状态                    | 触发方               |
+| -------------------------------- | --------------------------------------------------- | ------------------------- | -------------------- |
+| （无档案）                       | 首次推导                                            | `DERIVED`                 | Agent（Step 5 落档） |
+| `DERIVED`                        | 用户回复"确认"或触发 `确认调用链 <slug>`            | `VERIFIED`                | 用户                 |
+| `DERIVED` / `VERIFIED`           | 沿途某模块 `LAST_ANALYZED` 变更（15 Step 5.5 联动） | `STALE`                   | 15 Step 5.5          |
+| `STALE`                          | 用户触发 `刷新调用链档案 <slug>`                    | `DERIVED`（等待再次核对） | 用户                 |
+| `DERIVED` / `VERIFIED` / `STALE` | 用户触发 `作废调用链 <slug>`                        | `ABANDONED`               | 用户                 |
 
 > ⚠️ **禁止**：Agent 不得自作主张把 `DERIVED` 升级为 `VERIFIED`；`VERIFIED` 必须由用户显式触发。
 
@@ -624,13 +633,13 @@ sequenceDiagram
 
 每份链路档案都必须维护一个「变更历史」表格，遵循**只追加、不修改**：
 
-| 事件 | 追加时机 | 追加者 |
-|------|---------|-------|
-| `首次推导` | Step 5 首次落档 | Agent |
-| `用户核对通过` | STATUS: DERIVED → VERIFIED | Agent（用户触发确认时） |
-| `联动置为 STALE` | 15 Step 5.5 检测到沿途模块更新 | 15（自动） |
-| `用户触发重推` | STATUS: STALE → DERIVED，同时刷新 `SOURCE_MODULES_SNAPSHOT` | Agent |
-| `用户作废` | STATUS → ABANDONED | Agent |
+| 事件             | 追加时机                                                    | 追加者                  |
+| ---------------- | ----------------------------------------------------------- | ----------------------- |
+| `首次推导`       | Step 5 首次落档                                             | Agent                   |
+| `用户核对通过`   | STATUS: DERIVED → VERIFIED                                  | Agent（用户触发确认时） |
+| `联动置为 STALE` | 15 Step 5.5 检测到沿途模块更新                              | 15（自动）              |
+| `用户触发重推`   | STATUS: STALE → DERIVED，同时刷新 `SOURCE_MODULES_SNAPSHOT` | Agent                   |
+| `用户作废`       | STATUS → ABANDONED                                          | Agent                   |
 
 ### 6.6 `--no-persist` 例外
 
@@ -695,29 +704,30 @@ Agent 加载 STALE 链路时**不自动重推**，仅明确提示：
 
 ### 7.3 触发词汇总
 
-| 触发词 | 行为 |
-|-------|------|
-| `列出已推导的调用链` / `查看调用链档案` | 读 `chains/index.md` 输出档案清单表 |
-| `刷新调用链档案 <slug>` | 按当前 modules 状态重推并覆盖旧档案；STATUS 回到 DERIVED；`SOURCE_MODULES_SNAPSHOT` 更新；「变更历史」追加 |
-| `确认调用链 <slug>` / 用户回复"链路正确/已核对/verified" | STATUS: DERIVED → VERIFIED；追加「变更历史」 |
-| `作废调用链 <slug>` | STATUS → ABANDONED；档案文件保留不删除 |
+| 触发词                                                   | 行为                                                                                                       |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `列出已推导的调用链` / `查看调用链档案`                  | 读 `chains/index.md` 输出档案清单表                                                                        |
+| `刷新调用链档案 <slug>`                                  | 按当前 modules 状态重推并覆盖旧档案；STATUS 回到 DERIVED；`SOURCE_MODULES_SNAPSHOT` 更新；「变更历史」追加 |
+| `确认调用链 <slug>` / 用户回复"链路正确/已核对/verified" | STATUS: DERIVED → VERIFIED；追加「变更历史」                                                               |
+| `作废调用链 <slug>`                                      | STATUS → ABANDONED；档案文件保留不删除                                                                     |
 
 ---
 
 ## Step 8 · 与其他工作流的协作
 
-| 工作流 | 关系 |
-|-------|------|
+| 工作流                                             | 关系                                                                                                                                                                                           |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [15-module-inventory.md](./15-module-inventory.md) | 提供三段依赖关系与入口点作为推导原料；本工作流启动前必须通过 15 的时效性门禁；**v1.8 新增：15 Step 5.5 每次刷新模块档案后，扫 `chains/index.md` 把涉及该模块的链路联动置为 STALE**（级联失效） |
-| [07-bug-fixing.md](./07-bug-fixing.md) | Bug 定位阶段可先执行本工作流的正向推导，从 Bug 表现的入口一路追到根因位置；已有档案可复用（v1.8） |
-| [08-code-review.md](./08-code-review.md) | Code Review 阶段可执行反向推导，评估改动的影响面；v1.8 起 review 时可直接引用 `chains/reverse-*.md` 已推导档案 |
-| [12-pull-request.md](./12-pull-request.md) | PR 描述可附带本工作流的影响面输出 / 直接引用 `chains/<slug>.md` 档案链接，便于评审 |
+| [07-bug-fixing.md](./07-bug-fixing.md)             | Bug 定位阶段可先执行本工作流的正向推导，从 Bug 表现的入口一路追到根因位置；已有档案可复用（v1.8）                                                                                              |
+| [08-code-review.md](./08-code-review.md)           | Code Review 阶段可执行反向推导，评估改动的影响面；v1.8 起 review 时可直接引用 `chains/reverse-*.md` 已推导档案                                                                                 |
+| [12-pull-request.md](./12-pull-request.md)         | PR 描述可附带本工作流的影响面输出 / 直接引用 `chains/<slug>.md` 档案链接，便于评审                                                                                                             |
 
 ---
 
 ## 相关文件
 
 <!-- CONTENT_START: related_files -->
+
 - `.agent-workflow/workflows/15-module-inventory.md` — 台账建设与维护（本工作流的数据源）
 - `.agent-workflow/modules/index.md` — 模块索引（关键词匹配起点）
 - `.agent-workflow/modules/_topics.md` — MQ topic 反查表（本工作流的辅助索引）
@@ -726,6 +736,7 @@ Agent 加载 STALE 链路时**不自动重推**，仅明确提示：
 - `.agent-workflow/chains/index.md` — **v1.8 链路档案索引**（Step 0.4 复用检查入口）
 - `.agent-workflow/chains/*.md` — **v1.8 链路档案**（Step 5-6 落档产物，跨会话复用）
 - `.agent-workflow/templates/chain-template.md` — **v1.8 链路档案模板**（Step 6 落档骨架）
+
 <!-- CONTENT_END: related_files -->
 
 ---
@@ -733,10 +744,12 @@ Agent 加载 STALE 链路时**不自动重推**，仅明确提示：
 ## 备注
 
 <!-- CONTENT_START: notes -->
+
 - 本工作流强调"**诚实优先**"：宁可标注断点也不假装完整。链路推导的价值在于"信息可信"，一旦引入猜测就会误导后续改动
 - 深度限制是防止大项目遍历爆炸的关键，用户可显式扩展但需承担成本
 - 函数级链路不在本工作流范围内。如需精确到函数，用户应在推导后对关键节点用 `grep_search` 补充调用点
 - 若项目未使用 MQ，`_topics.md` 可保留但为空（表头 + 空表体），不影响其他能力
+
 <!-- CONTENT_END: notes -->
 
 ---

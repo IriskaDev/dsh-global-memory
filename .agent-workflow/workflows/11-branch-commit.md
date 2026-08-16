@@ -1,6 +1,6 @@
 <!-- MODULE: branch-commit -->
-<!-- STATUS: TODO -->
-<!-- LAST_ANALYZED: -->
+<!-- STATUS: DONE -->
+<!-- LAST_ANALYZED: 2026-08-17 -->
 <!-- ANALYZER_VERSION: 1.0 -->
 
 # 分支提交规范
@@ -14,7 +14,11 @@
 ## 概述
 
 <!-- CONTENT_START: overview -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 分支模型（用户确认）：单 master + 按需 feature 分支；日常改动直接在 master，较大改动开 feature/<slug>。
+- Commit 强制 Conventional Commits：commitlint.config.js（extends @commitlint/config-conventional）+ husky commit-msg。
+- 提交前门禁：husky pre-commit 运行 typecheck + lint + format:check。
+
 <!-- CONTENT_END: overview -->
 
 ---
@@ -22,7 +26,18 @@
 ## 分支策略
 
 <!-- CONTENT_START: branch_strategy -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+| 项              | 规范                                                           |
+| --------------- | -------------------------------------------------------------- |
+| 主分支          | master（唯一长期分支）                                         |
+| 日常改动        | 直接在 master 提交并推送                                       |
+| 较大改动        | feature/<slug>（slug 用 kebab-case，如 feature/global-search） |
+| fix/hotfix 分支 | 未定义独立类型；紧急修复同日常规则，直接 master 或按需 feature |
+| 远端            | github.com/IriskaDev/dsh-global-memory（PRIVATE）              |
+| 分支保护        | 未检测到分支保护配置                                           |
+
+- 未检测到 .gitflow / commitizen 配置；分支模型以本节（用户确认）为 SSOT。
+
 <!-- CONTENT_END: branch_strategy -->
 
 ---
@@ -30,7 +45,16 @@
 ## Commit 规范
 
 <!-- CONTENT_START: commit_convention -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 标准：Conventional Commits（type(scope): subject）。
+- 强制配置：commitlint.config.js = { extends: ['@commitlint/config-conventional'] }；.husky/commit-msg 运行 npx --no-install commitlint --edit "$1"。
+- 常用类型示例：
+  - feat(memory): 新增记忆标签聚合搜索
+  - fix(store): 修复损坏索引文件导致的保存失败
+  - test(store): 补充 safeCategory 边界用例
+  - docs: 更新 README 数据格式
+  - chore: 升级 TypeScript 到 5.9
+
 <!-- CONTENT_END: commit_convention -->
 
 ---
@@ -38,7 +62,15 @@
 ## 提交前检查
 
 <!-- CONTENT_START: pre_commit_hooks -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+| Hook              | 内容                                                    | 失败处理                                            |
+| ----------------- | ------------------------------------------------------- | --------------------------------------------------- |
+| .husky/pre-commit | npm run typecheck → npm run lint → npm run format:check | 任一失败即阻止 commit，修复后重新提交               |
+| .husky/commit-msg | npx --no-install commitlint --edit "$1"                 | 消息不合规阻止 commit，按 Conventional Commits 改写 |
+
+- hooks 由 husky 管理（prepare script = husky）。
+- 测试（npm test）不在 hook 内，提交前按 05 手动执行。
+
 <!-- CONTENT_END: pre_commit_hooks -->
 
 ---
@@ -80,6 +112,7 @@ git status                   # 确认工作区干净
    - [ ] 新增/删除对外入口文件时，已完成模块档案的新建/合并/拆分决策
 
 **未通过时**：
+
 - 补齐 [15 Step 5 增量更新](./15-module-inventory.md#step-5--增量更新流程自动--手动共用) 后再执行 `git add`
 - 模块档案与代码变更**必须在同一次 commit 内提交**，禁止分开提交（防止台账与代码短暂不一致）
 
@@ -131,7 +164,11 @@ git push origin --delete <已合并分支名>
 ## GitHub 平台操作指引
 
 <!-- CONTENT_START: github_branch -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 仓库：github.com/IriskaDev/dsh-global-memory（PRIVATE）。
+- 创建分支：git checkout -b feature/<slug>，push 用 git push -u origin feature/<slug>（平台操作见 12-pull-request.md）。
+- 日常 master 直接推送；无强制 PR 的检测配置（是否走 PR 按 12 与团队约定）。
+
 <!-- CONTENT_END: github_branch -->
 
 ---
@@ -139,7 +176,11 @@ git push origin --delete <已合并分支名>
 ## 相关文件
 
 <!-- CONTENT_START: related_files -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- commitlint.config.js
+- .husky/pre-commit、.husky/commit-msg
+- package.json（prepare/husky、lint/format/typecheck scripts）
+
 <!-- CONTENT_END: related_files -->
 
 ---
@@ -147,7 +188,10 @@ git push origin --delete <已合并分支名>
 ## 备注
 
 <!-- CONTENT_START: notes -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 分支模型为 2026-08-17 用户确认的决策，写入后作为 03/07 流程引用的唯一权威来源。
+- 未执行 git branch/git log 检测（本次分析约定禁跑 git 命令），历史分支与提交样例以本节规范为准。
+
 <!-- CONTENT_END: notes -->
 
 ---

@@ -89,12 +89,12 @@ $DSH_HOME/memory/
 
 ### 4.2 工具
 
-| 工具名 | 参数 | 行为 |
-|---|---|---|
-| `memory_save` | `key*`, `category*`, `content*`, `summary?`, `tags?` | 创建或覆盖一条记忆，返回保存状态；只更新 `index.json`，不刷新模型当前上下文中的索引快照 |
-| `memory_recall` | `key*` | 按 key 返回该条完整内容；仅在当轮作为工具结果返回，用完即止 |
-| `memory_search` | `query*`, `category?`, `tag?`, `limit?` | 对 key/content/tags 做大小写不敏感子串搜索，返回带 summary 的结果 |
-| `memory_delete` | `key*` | 删除一条记忆；只更新 `index.json`，不刷新模型当前上下文中的索引快照 |
+| 工具名          | 参数                                                 | 行为                                                                                    |
+| --------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `memory_save`   | `key*`, `category*`, `content*`, `summary?`, `tags?` | 创建或覆盖一条记忆，返回保存状态；只更新 `index.json`，不刷新模型当前上下文中的索引快照 |
+| `memory_recall` | `key*`                                               | 按 key 返回该条完整内容；仅在当轮作为工具结果返回，用完即止                             |
+| `memory_search` | `query*`, `category?`, `tag?`, `limit?`              | 对 key/content/tags 做大小写不敏感子串搜索，返回带 summary 的结果                       |
+| `memory_delete` | `key*`                                               | 删除一条记忆；只更新 `index.json`，不刷新模型当前上下文中的索引快照                     |
 
 说明：
 
@@ -106,10 +106,10 @@ $DSH_HOME/memory/
 - 使用 `ctx.commands.register` 注册用户命令；命令在 UI 命令面执行，**内容不经过 LLM**，结果只显示在 UI，不进模型历史、不占 token。
 - v1 注册两个命令：
 
-| 命令 | 语法 | 行为 |
-|---|---|---|
-| `/memory_save` | `/memory_save <key> <content...>` | 第一个词为 key，其余为 content；category 默认 `general`，summary 自动截取；直接落盘 |
-| `/memory_delete` | `/memory_delete <key>` | 直接删除一条记忆 |
+| 命令             | 语法                              | 行为                                                                                |
+| ---------------- | --------------------------------- | ----------------------------------------------------------------------------------- |
+| `/memory_save`   | `/memory_save <key> <content...>` | 第一个词为 key，其余为 content；category 默认 `general`，summary 自动截取；直接落盘 |
+| `/memory_delete` | `/memory_delete <key>`            | 直接删除一条记忆                                                                    |
 
 - 命令与工具共用同一套 `store.ts` 读写逻辑，保证行为一致。
 - 命令保存/删除后，清除该会话的索引快照缓存；模型下一次活动（pre-step）时自动注入更新后的索引，且只含 key+tags，不含 content。

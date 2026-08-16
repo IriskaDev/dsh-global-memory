@@ -29,11 +29,13 @@
 - **`.agent-workflow/CHANGELOG.md`**：追加本条目
 
 #### 设计取舍
+
 - **不做备份**：信任自问闸门 + 只增不删原则，靠 `.daemon/reports/` 操作报告 + git diff 复盘兜底
 - **默认冷却**：Q8 拆分需 `SPLIT_SUGGESTED ≥ 7` 天，每次运行只做 1 个动手类任务，降低单点爆炸风险
 - **向后兼容**：使用项目的 daemon-state.md / AGENTS.md / workflows 无需改动，首次运行自动创建 `.daemon/reports/`
 
 ### 变更
+
 - `WORKFLOW_VERSION`：1.11 → **1.12**（daemon 升级为激进执行员，向后兼容）
 - 顶层 `ANALYZER_VERSION`：**1.7 保持不变**（未修改 15/16 分析器协议）
 - 使用项目：**无需改动**，下次定时器唤醒自然按 v1.12 SOP 执行
@@ -60,23 +62,27 @@
 - **`.agent-workflow/CHANGELOG.md`**：追加本条目
 
 ### 变更
+
 - `WORKFLOW_VERSION`：1.10 → **1.11**（daemon 发现能力增强，向后兼容）
 - 顶层 `ANALYZER_VERSION`：**1.7 保持不变**（未修改 15/16 分析器协议；daemon 是纯调度层，不参与 workflow 检测协议）
 - `workflows/14-workflow-self-check.md` `ANALYZER_VERSION`：**1.7 保持不变**（本轮无 workflows 骨架变更，META 跟随规则不触发升级）
 - `workflows/15-module-inventory.md` / `workflows/16-call-chain-derivation.md` `ANALYZER_VERSION`：**1.6 保持不变**
 
 ### 影响范围
+
 - **每日发现效率**：daemon 每天真正能"看见新增的代码目录 → 立刻建档"，模块粒度会随代码演进自动细化，不再依赖用户手动触发 `建立模块台账`
 - **单次运行时长**：Q1.5 建档命中新目录时会走完整的 15 号 Step 3（含 Step 1.6 递归下钻），本次运行工具调用数会接近 60 次预算上限；受"每次只做 1 个任务"铁律保护，不会挤占其他象限
 - **Q2.6 首次运行**：因为历史档案未记录一级子目录快照，Q2.6 首次触发时会**只登记不打标记**（登记本次快照到「## 备注 · 下钻审计记录」，供下次 diff）
 - **不动手边界**：Q2.5（胖模块下钻）与 Q2.6（目录膨胀）依然只加建议标记，daemon 不改已有档案主体、不做拆分决策、不修改 `<!-- USER_EDITED -->` 段落
 
 ### 迁移建议
+
 - 无破坏性变更；已有 daemon-state.md 与 correction-log.md 无需改造
 - 下游项目升级路径：clone 新模板后，下次守护进程唤醒即自动应用新规则；无需人工干预
 - 若希望立即体验：直接触发一次守护进程（按 `daemon/cron-prompt.txt` 唤醒），首轮命中 Q1.5 的可能性较高
 
 ### 备注
+
 - 需求来源：用户反馈"当前 daemon 流程能否让模块结构越来越细分和精确"，发现两大盲区（未建档目录、已建档目录膨胀）
 - 设计权衡（用户对齐结论 · 方案 X）：
   - **A + 执行员最小交集**：只对 Q1.5（纯新增建档）解锁自动执行；Q2.5 / Q2.6（涉及改结构）保持只加标记
@@ -202,6 +208,7 @@
   - 「模块台账与调用链推导」章节新增「15/16 v1.9 模块分层结构与三级下钻加载」小节：目录结构 + 三级加载协议 + 建 Group 3 条判定 + 双向反向索引 + Token 收益
 
 ### 变更
+
 - `WORKFLOW_VERSION`：1.8 → **1.9**（15/16 分层结构主体改动，向后兼容）
 - 顶层 `ANALYZER_VERSION`：1.5 → **1.6**（新增表 H GROUP_META；表 G CHAIN_META 升级）
 - `workflows/14-workflow-self-check.md` `ANALYZER_VERSION`：1.5 → **1.6**（META 跟随规则）
@@ -211,6 +218,7 @@
 - `templates/chain-template.md` `ANALYZER_VERSION`：1.5 → **1.6**（快照格式升级）
 
 ### 兼容性
+
 - **向后兼容（可选升级）**：01-13 项目侦察类流程 `ANALYZER_VERSION` 保持 `1.0`，无需重新分析
 - **旧扁平结构可继续用**：v1.9 未强制所有项目采用分层，`SUB_MODULE_COUNT < 3` 的项目继续保留扁平模块结构；只有 ≥3 个高内聚子模块才建议分组
 - **旧快照格式仍可读**：v1.8 及之前的 `SOURCE_MODULES_SNAPSHOT` 不带路径（`<module>@<date>`）在 v1.9 下仍可读；15 Step 5.5 匹配时优先按带路径匹配，退化后按单模块名匹配；重推链路时自动升级为带路径格式
@@ -222,6 +230,7 @@
   4. 无需运行破坏性迁移脚本
 
 ### 备注
+
 - 需求来源：v1.8 落地后用户提问"关于模块的信息，现在正式情况是会有大模块中有很多小模块，现在全存在一个目录下 modules/ 感觉比较多也不方便查询，还有调用链我希望他们形成一个相互补充的管理"，暴露了 4 个缺口：分层组织、Group 索引导航、模块↔链路反向导航、Token 效率
 - 设计权衡（用户对齐结论）：
   - **可选分层 vs 强制分层**：选择可选分层（`SUB_MODULE_COUNT ≥ 3` 才建议建 Group），避免小项目为了合规硬拆结构
@@ -295,6 +304,7 @@
   - 16 号模块检测规则段落补 v1.8 落档协议 4 条（默认落档 / 复用命中 / 级联失效 / 人工担保升级）+ 输出目标修订
 
 ### 变更
+
 - `WORKFLOW_VERSION`：1.7 → **1.8**（16 号工作流新增落档协议 + 15 新增级联失效，向后兼容）
 - 顶层 `ANALYZER_VERSION`：1.4 → **1.5**（新增表 G · CHAIN_META，Agent 需按新协议落档）
 - `workflows/14-workflow-self-check.md` `ANALYZER_VERSION`：1.4 → **1.5**（META 跟随规则）
@@ -302,6 +312,7 @@
 - `workflows/16-call-chain-derivation.md` `ANALYZER_VERSION`：1.4 → **1.5**（本轮 Step 5-8 主体改动 + META 跟随）
 
 ### 兼容性
+
 - **完全向后兼容**：01-13 项目侦察类流程 `ANALYZER_VERSION` 保持 `1.0`，无需重新分析
 - **旧项目升级路径**：clone 新模板后：
   1. `chains/` 目录自动可用，首次推导即开始积累链路库
@@ -311,6 +322,7 @@
 - **`--no-persist` 保底**：临时探索场景仍可关闭落档，与 v1.7 行为一致
 
 ### 备注
+
 - 需求来源：v1.7 落地后用户提问"当前工作流的 SOP 中，做调用链推导的时候没有落档吗？下次其他 Agent 来完成工作时没有对应已经推导的数据吗？"，暴露了 3 个缺口：跨会话共享、审计追溯、变更感知
 - 设计权衡（用户对齐结论）：
   - **默认落档 vs 默认关闭**：选择默认落档，只有 `--no-persist` 才关闭 —— 否则用户经常忘记落档，链路库永远起不来
@@ -353,6 +365,7 @@
 - **`.agent-workflow/guide.md`**：「模块台账与调用链推导」章节新增「16 v1.7 分叉表达能力」小节
 
 ### 变更
+
 - `WORKFLOW_VERSION`：1.6 → **1.7**（16 号工作流协议扩展，向后兼容）
 - 顶层 `ANALYZER_VERSION`：1.3 → **1.4**（新增分叉语义常量表 F，Agent 需按新协议输出分叉图）
 - `workflows/14-workflow-self-check.md` `ANALYZER_VERSION`：1.3 → **1.4**（META 跟随规则）
@@ -360,12 +373,14 @@
 - `workflows/16-call-chain-derivation.md` `ANALYZER_VERSION`：1.0 → **1.4**（本轮主体改动，同时 META 跟随规则对齐顶层）
 
 ### 兼容性
+
 - **完全向后兼容**：01-13 项目侦察类流程 `ANALYZER_VERSION` 保持 `1.0`，无需重新分析
 - **旧版分叉图仍可读**：v1.6 之前用平铺箭头画的调用链在 v1.7 下依然合法；v1.7 只是**要求新推导必须使用规范化的语义标签**（sync/async/possible/条件表达式），旧图不强制回溯改造
-- **旧 modules/*.md 仍可用**：v1.6 档案未标注分叉类型时，16 推导会退化为"无分叉信息"处理，用户可通过 `刷新模块台账` 增量补充分叉标注
+- **旧 modules/\*.md 仍可用**：v1.6 档案未标注分叉类型时，16 推导会退化为"无分叉信息"处理，用户可通过 `刷新模块台账` 增量补充分叉标注
 - **成环检测是新增能力，非破坏性**：v1.6 的推导若遇到环会无限展开或漏画，v1.7 会主动剪枝并 ⚠️ 标注
 
 ### 备注
+
 - 需求来源：v1.6 落地后用户反馈"调用链是否有单链后可能出现多链的情况"，暴露了 4 个缺口：条件分叉标签、同步 vs 异步扇出区分、多态实现的置信度、成环检测
 - 设计权衡：
   - **成环是必须修的正确性问题**（其他 3 个是精度问题），本轮一次性一起补齐
@@ -417,18 +432,21 @@
 - **`.agent-workflow/guide.md`**：新增「模块台账与调用链推导」章节；自定义扩展编号示例 `15-` → `17-`（因 14/15/16 已占用）
 
 ### 变更
+
 - `WORKFLOW_VERSION`：1.5 → **1.6**（新增 15/16 两个 META 元流程能力，向后兼容）
 - 顶层 `ANALYZER_VERSION`：1.3（保持不变，未修改分析器基础协议）
 - `workflows/15-module-inventory.md` `ANALYZER_VERSION`：**1.3**（按 META 跟随规则同顶层）
 - `workflows/16-call-chain-derivation.md` `ANALYZER_VERSION`：**1.3**（同上）
 
 ### 兼容性
+
 - **完全向后兼容**：01-13 项目侦察类流程 `ANALYZER_VERSION` 保持 `1.0`，无需重新分析
 - **09 与 15 分工**：09 保留"首次全量分析"角色，15 承担"增量维护 + 时效追踪"，二者产物写入同一份 `modules/<name>.md`
 - **老项目升级路径**：clone 新模板后，若 `modules/*.md` 缺少「入口点/三段依赖/时效元数据」新章节，运行 `刷新模块台账` 会增量补全（不覆盖已有内容）
-- **未生成过任何 modules/*.md 的项目**：15 Step 4 会提示"台账缺失，建议先跑 09 全量分析"，不阻塞常规开发流程；11 提交门禁在 `modules/` 完全为空时降级为"仅提示不阻断"
+- **未生成过任何 modules/\*.md 的项目**：15 Step 4 会提示"台账缺失，建议先跑 09 全量分析"，不阻塞常规开发流程；11 提交门禁在 `modules/` 完全为空时降级为"仅提示不阻断"
 
 ### 备注
+
 - 需求来源：用户反馈 "Agent 改代码时要重新扫代码理解模块结构，浪费 tokens 且沉淀不下来"；治理理念是**把 Agent 的短期记忆变成项目的长期记忆索引**
 - 设计权衡（用户对齐结论）：
   - 粒度采用"逻辑功能闭合"而非硬性行数上限（150-800 行仅作参考区间）
@@ -501,19 +519,22 @@
 - **#A6 [F/治理飞轮]** `templates/templates-guide.md` 末尾新增「**新增 / 修改工作流时的常量同步清单**」（6 步有序清单），把"先改常量表 → 再改引用点 → 再跑自检"固化为治理 SOP；CHANGELOG 增条目时强制标注 `[D5/常量更新]` 标签
 
 ### 变更
+
 - `WORKFLOW_VERSION`：1.3 → **1.4**（新增"约束常量表 + D5.E1~E6 机械规则"模板能力，向后兼容）
 - 顶层 `ANALYZER_VERSION`：1.2 → **1.3**（D5 自检协议扩展）
 - `workflows/14-workflow-self-check.md` `ANALYZER_VERSION`：1.2 → **1.3**（按 META 跟随规则同步升级）
 - `workflows/14-workflow-self-check.md`「模板工程模式」段补充对 D5.E1~E6 的提及
 
 ### 兼容性
+
 - **完全向后兼容**：13 个 `01` ~ `13` 项目侦察类 workflow 文件 `ANALYZER_VERSION` 仍为 `1.0`，无需重新分析（D5.E1~E6 仅作用于 task 元数据 / 触发词 / 跨文件命令引用，不改变 01-13 的检测协议）
 - 已生成的真实任务文件（`tasks/_active/*.md`）无需迁移：旧任务的 `RELATED_WORKFLOWS` 值若不在表 A 范围内，自检会报 D5.E1 但不影响任务执行
 - 旧版工作流模板 clone 后跑 `自检工作流` 会输出新增 D5.E1~E6 的检查结果，可通过 `忽略缺陷 #N` 写入 `audit-baseline.md` 豁免
 
 ### 备注
+
 - 治理路径选择：上一轮方案讨论中考虑过 `${CONST_NAME}` 占位符 + INCLUDE 共享片段，但 markdown 不原生支持模板展开，强行引入会变成"未实现的展开协议"。本次采用**务实变体**——不引入新协议，而是用"常量表 + 反向索引注释 + 机械检查规则"三件套实现等效约束
-- 预期收益（基于 CHANGELOG 三轮自检趋势线推算）：未来每轮自检 D5 维度缺陷数从 5~7 条 → 0~1 条
+- 预期收益（基于 CHANGELOG 三轮自检趋势线推算）：未来每轮自检 D5 维度缺陷数从 5~~7 条 → 0~~1 条
 - 涉及 7 个文件改动：`AGENTS.md` + `analyzer-instructions.md` + `14-workflow-self-check.md` + 3 个 task 模板 + `_example.md` + `tasks-guide.md` + `templates-guide.md` + `CHANGELOG.md`（即本文件）
 
 ---
@@ -547,18 +568,18 @@
 
 ### 第三轮自检确认（治理效果验证报告）
 
-| 验证项 | 期望状态 | 实际状态 |
-|------|:------:|:------:|
-| 三 task 模板 RELATED_WORKFLOWS 含 13 | ✅ | ✅ feature/bugfix/refactor 全部对齐 |
-| 三 task 模板 Step List 显式跳 13-ci-cd-pipeline | ✅ | ✅ 三模板 Step CI 行均带 `参考 workflows/13-ci-cd-pipeline.md` |
-| bugfix 模板 RELATED_WORKFLOWS 含 08 | ✅ | ✅ 已含 |
-| 三 task 模板顶部有"章节结构"标注 | ✅ | ✅ feature(7 节)/bugfix(8 节)/refactor(8 节) 各自标注 |
-| tasks-guide.md 目录图修正为 tasks-guide.md | ✅ | ✅ 已修 |
-| templates-guide.md 字段说明含 META 例外 | ✅ | ✅ "4 个必填 + META 额外 1 个 WORKFLOW_TYPE" 完整 |
-| 14 自检 Step 1 有"模板工程模式"段落 | ✅ | ✅ 三条规则完整落地（明确告知/建议替代/视角调整） |
-| _example.md 顶部 quote 含"对应模板"+ 历史差异免责 | ✅ | ✅ 完整 |
-| 关键流 8 跳全闭环 | 8 ✅ | **8 ✅**（task 模板内部已显式跳 13） |
-| 三 task 模板 + _example.md 的 RELATED_WORKFLOWS 严格对齐 | ✅ | ❌ → ✅（修复 #R1 后达成） |
+| 验证项                                                   | 期望状态 |                            实际状态                            |
+| -------------------------------------------------------- | :------: | :------------------------------------------------------------: |
+| 三 task 模板 RELATED_WORKFLOWS 含 13                     |    ✅    |              ✅ feature/bugfix/refactor 全部对齐               |
+| 三 task 模板 Step List 显式跳 13-ci-cd-pipeline          |    ✅    | ✅ 三模板 Step CI 行均带 `参考 workflows/13-ci-cd-pipeline.md` |
+| bugfix 模板 RELATED_WORKFLOWS 含 08                      |    ✅    |                            ✅ 已含                             |
+| 三 task 模板顶部有"章节结构"标注                         |    ✅    |     ✅ feature(7 节)/bugfix(8 节)/refactor(8 节) 各自标注      |
+| tasks-guide.md 目录图修正为 tasks-guide.md               |    ✅    |                            ✅ 已修                             |
+| templates-guide.md 字段说明含 META 例外                  |    ✅    |       ✅ "4 个必填 + META 额外 1 个 WORKFLOW_TYPE" 完整        |
+| 14 自检 Step 1 有"模板工程模式"段落                      |    ✅    |       ✅ 三条规则完整落地（明确告知/建议替代/视角调整）        |
+| _example.md 顶部 quote 含"对应模板"+ 历史差异免责        |    ✅    |                            ✅ 完整                             |
+| 关键流 8 跳全闭环                                        |   8 ✅   |              **8 ✅**（task 模板内部已显式跳 13）              |
+| 三 task 模板 + _example.md 的 RELATED_WORKFLOWS 严格对齐 |    ✅    |                   ❌ → ✅（修复 #R1 后达成）                   |
 
 ### 备注
 
@@ -619,6 +640,7 @@
 ## [1.3.0] - 2026-06-01
 
 ### 新增
+
 - **工作流自检（META 元流程）**：新增 `workflows/14-workflow-self-check.md`，对 01-13 流程文档与任务 SOP 做质量审计（"SOP 的 Code Review"）
   - 7 个检查维度：D1 完整性 / D2 歧义性 / D3 可执行性 / D4 闭环性 / D5 一致性 / D6 可验证性 / D7 可恢复性
   - 健康度评分算法：`100 - Σ缺陷扣分`（Critical -10 / Major -5 / Minor -2 / Style -0.5）
@@ -630,16 +652,19 @@
 - `.agent-workflow/analyzer-instructions.md`：模块映射表新增 `workflow-self-check` 一行，并明确元流程不参与分析器自动重写、不计入完善度评分
 
 ### 变更
+
 - `WORKFLOW_VERSION`：1.2 → **1.3**（新增 META 元流程能力，向后兼容）
 - `ANALYZER_VERSION`（顶层）：1.1 → **1.2**（分析器协议扩展：新增对 META 类型流程的边界约定）
 - `guide.md` 自定义扩展示例编号修正：`14-your-workflow.md` → `15-your-workflow.md`（避免与新加入的 14 自检流程冲突，由 14 自检规则自身的狗粮测试发现）
 
 ### 兼容性
+
 - 向后兼容：13 个已生成的 workflow 文件（`01` ~ `13`）的 `ANALYZER_VERSION` 仍为 `1.0`，**无需重新分析**——本次未改变其检测协议或填充规则
 - META 元流程是新增正交能力，对已有阶段一/阶段二/阶段三流程零侵入
 - `.audit-cache.md` 建议加入 `.gitignore`；`audit-baseline.md` 建议入库（豁免基线需团队共享）
 
 ### 备注
+
 - 历史版本号 `[1.2.x]` 在 CHANGELOG 中无显式条目，本次 `1.3.0` 接续累计；未来如需考据 1.2 变更，可参考 git log
 - 本次未实现 `--fix` 自动修复能力，自检仅输出报告 + 修复建议，避免误改文档；后续迭代可考虑
 
@@ -648,6 +673,7 @@
 ## [1.1.0] - 2026-05-26
 
 ### 新增
+
 - **任务目录机制**：新增 `.agent-workflow/tasks/` 目录，为每份研发任务提供独立的“作战地图 + 进度档案”，支持 Agent 中断后无损恢复
   - `tasks/README.md`：任务目录使用指南与 Agent 执行规约
   - `tasks/_example.md`：已填好的样例任务（功能开发，进行到 Step 3.4）
@@ -662,10 +688,12 @@
 - `templates/README.md` 新增「新增研发任务的步骤（Task Templates）」章节
 
 ### 变更
+
 - `WORKFLOW_VERSION`：1.0 → **1.1**（新增能力，向后兼容）
 - `AGENTS.md` 「目录结构」示意同步补充 `tasks/` 目录
 
 ### 兼容性
+
 - 向后兼容：`ANALYZER_VERSION` 仍为 1.0，13 个已生成的 workflow 文件无需重新分析
 - 仅增量新增任务执行实例层，对已有流程与模块文档零侵入
 
@@ -674,6 +702,7 @@
 ## [1.0.1] - 2026-05-25
 
 ### 新增
+
 - 顶层 `README.md`：模板项目对外说明门面
 - 顶层 `LICENSE`（MIT）：明确许可范围，便于复用
 - `.agent-workflow/CHANGELOG.md`：模板自身版本变更记录（即本文件）
@@ -683,9 +712,11 @@
 - `AGENTS.md` 元数据补充 `ANALYZER_VERSION` 字段
 
 ### 修复
+
 - `AGENTS.md` 第 09 行流程名称由「模块结构分析」统一为「模块分析」，与 `analyzer-instructions.md` 模块映射表和 09 工作流文件标题保持一致
 
 ### 兼容性
+
 - `WORKFLOW_VERSION`：1.0（不变）
 - `ANALYZER_VERSION`：1.0（不变）
 - 仅文档增补与命名修正，不影响已生成的分析结果，无需重新执行分析
@@ -695,6 +726,7 @@
 ## [1.0.0] - 2026-04-16
 
 ### 新增
+
 - 入口索引文件 `AGENTS.md`，含 13 个工作流状态总览表
 - 13 个标准化工作流骨架文件（`workflows/01` ~ `workflows/13`）
 - 业务模块目录 `modules/` 与 `modules/README.md` 模板说明

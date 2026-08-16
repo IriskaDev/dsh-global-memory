@@ -1,6 +1,6 @@
 <!-- MODULE: build-process -->
-<!-- STATUS: TODO -->
-<!-- LAST_ANALYZED: -->
+<!-- STATUS: DONE -->
+<!-- LAST_ANALYZED: 2026-08-17 -->
 <!-- ANALYZER_VERSION: 1.0 -->
 
 # 编译流程
@@ -12,7 +12,11 @@
 ## 概述
 
 <!-- CONTENT_START: overview -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 纯 TypeScript 插件：tsc -p tsconfig.json 编译 src → lib，无 bundler、无原生模块、无跨平台二进制。
+- 默认入口 scripts.build = tsc -p tsconfig.json；scripts/build.sh 保留为 DSH_CHECKOUT 环境备用。
+- 产物为平台无关的 Node ESM JavaScript，所有宿主平台共用同一份 lib/。
+
 <!-- CONTENT_END: overview -->
 
 ---
@@ -20,7 +24,15 @@
 ## 构建工具
 
 <!-- CONTENT_START: build_tools -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+| 项           | 内容                                                                                  |
+| ------------ | ------------------------------------------------------------------------------------- |
+| 工具         | TypeScript 5.9（tsc）                                                                 |
+| 配置         | tsconfig.json（rootDir src、outDir lib、declarationDir lib/types）                    |
+| 包管理器     | npm（package-lock.json）                                                              |
+| 备用脚本     | scripts/build.sh：探测 DSH_CHECKOUT 后 junction 链接宿主依赖，用 checkout 的 tsc 编译 |
+| 构建系统类型 | 单包、无 workspaces、无 Makefile/CMake 等原生构建                                     |
+
 <!-- CONTENT_END: build_tools -->
 
 ---
@@ -29,13 +41,14 @@
 
 > 根据改动类型选择合适的编译模式，避免不必要的全量重编。
 
-| 编译模式 | 触发时机 | 说明 |
-|---------|---------|------|
-| **增量编译** | 仅修改了已有文件内容 | 构建系统自动识别变更文件，只重编受影响的部分，速度最快 |
-| **全量编译** | 新增/删除文件、修改构建配置、切换分支、依赖变更 | 清除所有缓存后重新编译，确保产物一致性 |
-| **重置编译** | 构建产物异常、缓存污染、跨平台切换后 | 先执行 clean 清除所有中间产物和缓存，再执行全量编译 |
+| 编译模式     | 触发时机                                        | 说明                                                   |
+| ------------ | ----------------------------------------------- | ------------------------------------------------------ |
+| **增量编译** | 仅修改了已有文件内容                            | 构建系统自动识别变更文件，只重编受影响的部分，速度最快 |
+| **全量编译** | 新增/删除文件、修改构建配置、切换分支、依赖变更 | 清除所有缓存后重新编译，确保产物一致性                 |
+| **重置编译** | 构建产物异常、缓存污染、跨平台切换后            | 先执行 clean 清除所有中间产物和缓存，再执行全量编译    |
 
 > ⚠️ **注意**：以下情况**必须**使用全量编译或重置编译，增量编译可能产生错误结果：
+>
 > - 新增或删除源文件（文件依赖关系图发生变化）
 > - 修改了头文件 / 公共接口 / 导出符号
 > - 修改了构建脚本、CMakeLists.txt、Makefile 等构建配置
@@ -51,19 +64,38 @@
 ### 增量编译（仅文件内容修改）
 
 <!-- CONTENT_START: local_build_incremental -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+npm run build
+
+- tsconfig 未开启 incremental（无 tsBuildInfo 缓存），每次均为对 src/ 全量重编译；项目体量小（3 个 ts 文件），可直接作为快速验证命令。
+
 <!-- CONTENT_END: local_build_incremental -->
 
 ### 全量编译（有文件增删或配置变更）
 
 <!-- CONTENT_START: local_build_full -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+npm run build
+
+- 与增量命令相同：tsc 按 include: ['src'] 重新编译全部源文件，文件增删/配置变更后无需额外命令。
+
 <!-- CONTENT_END: local_build_full -->
 
 ### 重置编译（清除缓存后重建）
 
 <!-- CONTENT_START: local_build_clean -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+# PowerShell（项目根目录）
+
+Remove-Item -Recurse -Force lib
+npm run build
+
+# bash
+
+rm -rf lib && npm run build
+
+- 无独立 clean script；lib/ 被 .gitignore 忽略，可直接删除后重建。
+
 <!-- CONTENT_END: local_build_clean -->
 
 ---
@@ -75,19 +107,39 @@
 ### 宿主平台支持矩阵
 
 <!-- CONTENT_START: platform_matrix -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+| 宿主平台 | 支持情况                                 | 说明                                       |
+| -------- | ---------------------------------------- | ------------------------------------------ |
+| Windows  | ✅ npm run build                         | 原生 tsc；scripts/build.sh 需 Git Bash/WSL |
+| macOS    | ✅ npm run build / bash scripts/build.sh | 纯 JS 产物，无平台差异                     |
+| Linux    | ✅ npm run build / bash scripts/build.sh | 同上                                       |
+
+- 产物为 Node ESM（target ES2023），不区分目标平台；无交叉编译工具链要求。
+
 <!-- CONTENT_END: platform_matrix -->
 
 ### macOS 宿主 - 全平台编译
 
 <!-- CONTENT_START: full_build_macos -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+npm run build
+
+# 或备用（DSH 环境）：
+
+DSH_CHECKOUT=<checkout> bash scripts/build.sh
+
 <!-- CONTENT_END: full_build_macos -->
 
 ### Windows 宿主 - 全平台编译
 
 <!-- CONTENT_START: full_build_windows -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+npm run build
+
+# 或备用（DSH 环境，需 bash 可用，如 Git Bash/WSL）：
+
+bash scripts/build.sh
+
 <!-- CONTENT_END: full_build_windows -->
 
 ---
@@ -95,7 +147,14 @@
 ## 构建命令汇总
 
 <!-- CONTENT_START: build_commands -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+| 场景                  | 命令                       | 说明                                 |
+| --------------------- | -------------------------- | ------------------------------------ |
+| 本机快速/全量编译     | npm run build              | tsc -p tsconfig.json                 |
+| 类型检查（不产出）    | npm run typecheck          | tsc --noEmit                         |
+| 重置编译              | 删除 lib/ 后 npm run build | 无 clean script                      |
+| DSH checkout 备用构建 | bash scripts/build.sh      | 自动探测 DSH_CHECKOUT 并链接宿主依赖 |
+
 <!-- CONTENT_END: build_commands -->
 
 ---
@@ -103,7 +162,11 @@
 ## 构建配置
 
 <!-- CONTENT_START: build_config -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- tsconfig.json：target/lib ES2023、module/moduleResolution NodeNext、strict、declaration + declarationDir lib/types、outDir lib、rootDir src、sourceMap、skipLibCheck、esModuleInterop。
+- package.json：main=./lib/index.js、types=./lib/types/index.d.ts、files=['lib']。
+- eslint/prettier 均忽略 lib/ 产物。
+
 <!-- CONTENT_END: build_config -->
 
 ---
@@ -111,7 +174,17 @@
 ## 构建产物
 
 <!-- CONTENT_START: build_output -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+| 产物           | 路径                                      |
+| -------------- | ----------------------------------------- |
+| 编译后入口     | lib/index.js（package.json main）         |
+| 存储模块       | lib/store.js                              |
+| 编译后测试文件 | lib/store.test.js（npm test 直接运行）    |
+| 类型声明       | lib/types/index.d.ts 等（declarationDir） |
+| Source Map     | lib/**/*.js.map（sourceMap:true）         |
+
+- lib/ 与 _.tsbuildinfo、_.tgz 均在 .gitignore 中，不提交仓库。
+
 <!-- CONTENT_END: build_output -->
 
 ---
@@ -119,7 +192,11 @@
 ## 依赖管理
 
 <!-- CONTENT_START: dependency_management -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 常规构建：npm install 解析 peerDependencies（cordis、dsh-llm、dsh-tools、schemastery）。
+- DSH 环境构建：scripts/build.sh 用 junction 把 node_modules 下 cordis/cosmokit/schemastery/@deepseek-ai/* 链接到 DSH checkout 的 vendor/packages，再使用 checkout 的 tsc 编译。
+- 锁文件：package-lock.json；node_modules 不提交。
+
 <!-- CONTENT_END: dependency_management -->
 
 ---
@@ -127,7 +204,12 @@
 ## 相关文件
 
 <!-- CONTENT_START: related_files -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- package.json（build/typecheck scripts）
+- tsconfig.json（编译参数）
+- scripts/build.sh（DSH_CHECKOUT 备用构建）
+- .gitignore / .prettierignore（lib/ 忽略规则）
+
 <!-- CONTENT_END: related_files -->
 
 ---
@@ -135,7 +217,10 @@
 ## 备注
 
 <!-- CONTENT_START: notes -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 无增量编译缓存配置、无 clean script、无跨平台产物目录区分。
+- scripts/build.sh 仅在需要与 DSH 宿主 checkout 严格对齐依赖时使用；日常 npm run build 即可。
+
 <!-- CONTENT_END: notes -->
 
 ---

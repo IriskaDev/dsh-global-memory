@@ -1,6 +1,6 @@
 ﻿<!-- MODULE: code-optimization -->
-<!-- STATUS: TODO -->
-<!-- LAST_ANALYZED: -->
+<!-- STATUS: PARTIAL -->
+<!-- LAST_ANALYZED: 2026-08-17 -->
 <!-- ANALYZER_VERSION: 1.0 -->
 
 # 代码优化流程
@@ -12,7 +12,10 @@
 ## 概述
 
 <!-- CONTENT_START: overview -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 未检测到专用质量平台（Sonar/CodeClimate）、bundle 分析、size-limit、depcheck 等优化工具。
+- 现有基线：ESLint recommended + typescript-eslint + Prettier + tsc strict；当前代码无 TODO/FIXME 标记。
+
 <!-- CONTENT_END: overview -->
 
 ---
@@ -38,7 +41,16 @@
 ## 代码质量配置
 
 <!-- CONTENT_START: quality_tools -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+| 工具                         | 状态      | 说明                            |
+| ---------------------------- | --------- | ------------------------------- |
+| ESLint 10                    | ✅ 已配置 | eslint.config.js（flat config） |
+| tsc strict                   | ✅ 已配置 | tsconfig.json strict:true       |
+| Prettier                     | ✅ 已配置 | .prettierrc.json                |
+| Sonar / CodeClimate          | ❌ 未配置 | -                               |
+| bundle-analyzer / size-limit | ❌ 未配置 | 无前端 bundle                   |
+| depcheck                     | ❌ 未配置 | 未使用依赖需人工核对            |
+
 <!-- CONTENT_END: quality_tools -->
 
 ---
@@ -61,31 +73,46 @@
 搜索代码中的标记注释，统计分布情况：
 
 <!-- CONTENT_START: tech_debt -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 扫描范围 src/**（2026-08-17）：TODO / FIXME / HACK / XXX / DEPRECATED 标记均为 0 个。
+- 无明显遗留技术债标记；注意 src/store.ts 注释中的容错逻辑（损坏记忆文件跳过保留）属于设计决策而非债务。
+
 <!-- CONTENT_END: tech_debt -->
 
 #### 2.2 代码复杂度
 
 <!-- CONTENT_START: complexity -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- eslint.config.js 未设置 max-complexity / max-lines-per-function 等复杂度阈值。
+- 当前规模：src/index.ts 240 行、src/store.ts 430 行；建议函数级复杂度靠人工 Review 控制。
+
 <!-- CONTENT_END: complexity -->
 
 #### 2.3 重复代码（DRY 分析）
 
 <!-- CONTENT_START: duplication -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 未配置重复代码检测工具；当前无 jscpd 等。
+- 已知少量有意重复：store.ts 中 async/sync 两套索引重建（rebuildIndex / rebuildIndexSync），分别服务工具路径与 systemPrompt.context 同步路径；合并需谨慎评估。
+
 <!-- CONTENT_END: duplication -->
 
 #### 2.4 性能风险点
 
 <!-- CONTENT_START: performance -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 无 benchmark/ 目录与性能测试配置。
+- 可人工关注点：会话索引快照经 WeakMap 按 session 缓存，仅在 save/delete 后失效，避免每步重扫；memory_search 为内存索引线性扫描（数据量上限由 index categories=30 与搜索 limit 约束），当前规模足够。
+
 <!-- CONTENT_END: performance -->
 
 #### 2.5 依赖分析
 
 <!-- CONTENT_START: dependencies -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- peerDependencies：cordis / dsh-llm / dsh-tools / schemastery（宿主提供）。
+- devDependencies 与 scripts 一一对应（build/typecheck→typescript，test→node，lint→eslint 系，format→prettier，commit 门禁→husky/commitlint）；未发现明显未使用依赖（未经 depcheck 验证）。
+
 <!-- CONTENT_END: dependencies -->
 
 ---
@@ -95,10 +122,17 @@
 基于 Step 2 的扫描结果，按优先级输出可操作的优化建议：
 
 <!-- CONTENT_START: suggestions -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+| 优先级 | 建议                                                                |
+| ------ | ------------------------------------------------------------------- |
+| 🟠 中  | 补充 coverage / complexity 阈值，纳入 pre-commit 或 CI（当前无 CI） |
+| 🟡 低  | 如需长期维护，引入 depcheck 与 CHANGELOG 工具                       |
+| 🟡 低  | memory_search 线性扫描在记忆条目显著增长后，可评估索引化/分词优化   |
+
 <!-- CONTENT_END: suggestions -->
 
 **优先级判断标准**：
+
 - 🔴 **高**：影响运行时性能、存在内存泄漏/资源未释放、安全漏洞
 - 🟠 **中**：高复杂度函数、大量重复代码、未使用的依赖
 - 🟡 **低**：命名不规范、注释缺失、TODO 清理
@@ -108,6 +142,7 @@
 ### Step 4 · 记录优化结果
 
 分析完成后：
+
 1. 将扫描结果和优化建议写入本文件（更新 `overview`、各 `CONTENT` 区段）
 2. 重大技术债务同步记录到对应的 `.agent-workflow/modules/<module>.md` 的"注意事项"章节
 3. 可操作的优化项建议创建对应的 Issue 单据跟踪
@@ -117,7 +152,14 @@
 ## 代码质量指标汇总
 
 <!-- CONTENT_START: quality_metrics -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+| 指标                           | 当前值                 |
+| ------------------------------ | ---------------------- |
+| TODO/FIXME/HACK/XXX/DEPRECATED | 0                      |
+| 单元测试                       | 12 用例，npm test 通过 |
+| 复杂度阈值                     | 未配置                 |
+| 覆盖率阈值                     | 未配置                 |
+
 <!-- CONTENT_END: quality_metrics -->
 
 ---
@@ -125,7 +167,10 @@
 ## 相关文件
 
 <!-- CONTENT_START: related_files -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- eslint.config.js、.prettierrc.json、tsconfig.json
+- src/index.ts、src/store.ts、src/store.test.ts
+
 <!-- CONTENT_END: related_files -->
 
 ---
@@ -133,7 +178,10 @@
 ## 备注
 
 <!-- CONTENT_START: notes -->
-> ⚠️ **待实现** - 此部分将由 Agent 自动分析填充，或由开发者手动补充。
+
+- 10 为 PARTIAL：只有基础静态检查基线，缺少质量指标与专项优化工具。
+- 10 不计入阶段一完善度评分。
+
 <!-- CONTENT_END: notes -->
 
 ---

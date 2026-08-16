@@ -15,6 +15,7 @@
 ## 功能概述
 
 <!-- CONTENT_START: overview -->
+
 负责系统的用户身份认证与会话管理，提供以下能力：
 
 - 账号密码登录、登出
@@ -24,10 +25,12 @@
 - 双因素认证（2FA）
 
 **粒度自检**（按 15 版 Step 1.1）：
+
 - ✅ 职责单一：一句话概括——"负责用户身份认证与会话生命周期管理"
 - ✅ 入口收敛：所有对外接口聚合在 `src/auth/controller.ts` + `src/auth/service.ts`
 - ✅ 内聚闭合：修改 2FA 逻辑不影响 `user`、`order` 等模块的内部实现
 - ✅ 数据自洽：拥有独立的 `TokenPair`、`UserClaims` 数据结构，只读 `user` 的公开字段
+
 <!-- CONTENT_END: overview -->
 
 ---
@@ -35,17 +38,19 @@
 ## 入口点（Entry Points）
 
 <!-- CONTENT_START: entry_points -->
+
 > 供业务调用链推导（15 版 Step 8）作为链路起点使用。
 
-| 类型 | 入口标识 | 触发函数 | 说明 |
-|------|---------|---------|------|
-| HTTP | `POST /api/v1/auth/login` | `login()` | 账号密码登录 |
-| HTTP | `POST /api/v1/auth/logout` | `logout()` | 登出当前会话 |
-| HTTP | `POST /api/v1/auth/refresh` | `refresh()` | 刷新 access_token |
-| HTTP | `GET  /api/v1/auth/me` | `getMe()` | 获取当前登录用户信息 |
-| HTTP | `POST /api/v1/auth/2fa/verify` | `verify2FA()` | 校验 2FA 验证码 |
-| HTTP | `GET  /api/v1/auth/oauth/callback` | `oauthCallback()` | OAuth2 回调 |
-| 内部函数 | `verifyAccessToken(token)` | 同名 | 供 gateway/其他模块直接调用的 Token 校验入口 |
+| 类型     | 入口标识                           | 触发函数          | 说明                                         |
+| -------- | ---------------------------------- | ----------------- | -------------------------------------------- |
+| HTTP     | `POST /api/v1/auth/login`          | `login()`         | 账号密码登录                                 |
+| HTTP     | `POST /api/v1/auth/logout`         | `logout()`        | 登出当前会话                                 |
+| HTTP     | `POST /api/v1/auth/refresh`        | `refresh()`       | 刷新 access_token                            |
+| HTTP     | `GET  /api/v1/auth/me`             | `getMe()`         | 获取当前登录用户信息                         |
+| HTTP     | `POST /api/v1/auth/2fa/verify`     | `verify2FA()`     | 校验 2FA 验证码                              |
+| HTTP     | `GET  /api/v1/auth/oauth/callback` | `oauthCallback()` | OAuth2 回调                                  |
+| 内部函数 | `verifyAccessToken(token)`         | 同名              | 供 gateway/其他模块直接调用的 Token 校验入口 |
+
 <!-- CONTENT_END: entry_points -->
 
 ---
@@ -53,6 +58,7 @@
 ## 数据流向
 
 <!-- CONTENT_START: data_flow -->
+
 ```mermaid
 sequenceDiagram
     participant C as Client
@@ -75,6 +81,7 @@ sequenceDiagram
     SVC-->>API: TokenPair
     API-->>C: 200 { access_token, refresh_token }
 ```
+
 <!-- CONTENT_END: data_flow -->
 
 ---
@@ -82,6 +89,7 @@ sequenceDiagram
 ## 核心接口
 
 <!-- CONTENT_START: core_interfaces -->
+
 ```ts
 // src/auth/service.ts —— 对外导出符号（供本仓库其他模块引用）
 export async function login(username: string, password: string): Promise<TokenPair>
@@ -91,11 +99,12 @@ export async function verifyAccessToken(token: string): Promise<UserClaims>
 export async function verify2FA(userId: string, code: string): Promise<TokenPair>
 ```
 
-| 接口 | 稳定性 | 变更需级联刷新的下游 |
-|------|:-----:|--------------------|
-| `verifyAccessToken` | 🔒 稳定 | 全部下游调用方（改签名影响面极大） |
-| `login` / `refresh` | 🔒 稳定 | `api-gateway`、`admin-panel` |
-| `verify2FA` | 🟡 演进中 | `admin-panel` |
+| 接口                |  稳定性   | 变更需级联刷新的下游               |
+| ------------------- | :-------: | ---------------------------------- |
+| `verifyAccessToken` |  🔒 稳定  | 全部下游调用方（改签名影响面极大） |
+| `login` / `refresh` |  🔒 稳定  | `api-gateway`、`admin-panel`       |
+| `verify2FA`         | 🟡 演进中 | `admin-panel`                      |
+
 <!-- CONTENT_END: core_interfaces -->
 
 ---
@@ -103,6 +112,7 @@ export async function verify2FA(userId: string, code: string): Promise<TokenPair
 ## 上游依赖（我依赖谁）
 
 <!-- CONTENT_START: upstream_dependencies -->
+
 > 仅列本仓库内的其他模块，第三方库放在「注意事项」或此段末尾单独标注。
 
 - **`user` 模块**：调用 `getUserByName(name)`、`getUserById(id)` 读取用户基本信息与密码哈希
@@ -118,6 +128,7 @@ export async function verify2FA(userId: string, code: string): Promise<TokenPair
 ## 下游调用方（谁依赖我） · 1 层直接调用
 
 <!-- CONTENT_START: downstream_callers -->
+
 > 通过反向搜索本模块导出符号得出，仅记录 1 层直接调用方。
 
 - **`api-gateway`**：所有受保护路由中间件调用 `verifyAccessToken(token)`（约 47 处）
@@ -133,17 +144,19 @@ export async function verify2FA(userId: string, code: string): Promise<TokenPair
 ## 下游数据/接口调用（我调用的外部资源） · 1 层
 
 <!-- CONTENT_START: downstream_data_calls -->
-| 类别 | 资源 | 读写 | 用途 |
-|------|------|:----:|------|
-| **数据库表** | `t_user` | 读 | 通过 `user` 模块读取用户密码哈希、状态位 |
-| **数据库表** | `t_login_log` | 写 | 记录登录成功/失败流水 |
-| **Redis Key** | `session:<jti>` | 读写 | 会话存储，TTL = access_token 有效期 |
-| **Redis Key** | `blacklist:<jti>` | 读写 | Token 黑名单（登出后写入） |
-| **Redis Key** | `2fa:code:<userId>` | 读写 | 2FA 验证码缓存（TTL 5 分钟） |
-| **消息队列** | `topic:auth.login` | 发布 | 登录成功事件（notification/audit 订阅） |
-| **消息队列** | `topic:auth.logout` | 发布 | 登出事件（notification 订阅） |
-| **外部 HTTP** | `POST https://github.com/login/oauth/access_token` | 调用 | GitHub OAuth 换 token |
-| **外部 HTTP** | `POST https://oauth2.googleapis.com/token` | 调用 | Google OAuth 换 token |
+
+| 类别          | 资源                                               | 读写 | 用途                                     |
+| ------------- | -------------------------------------------------- | :--: | ---------------------------------------- |
+| **数据库表**  | `t_user`                                           |  读  | 通过 `user` 模块读取用户密码哈希、状态位 |
+| **数据库表**  | `t_login_log`                                      |  写  | 记录登录成功/失败流水                    |
+| **Redis Key** | `session:<jti>`                                    | 读写 | 会话存储，TTL = access_token 有效期      |
+| **Redis Key** | `blacklist:<jti>`                                  | 读写 | Token 黑名单（登出后写入）               |
+| **Redis Key** | `2fa:code:<userId>`                                | 读写 | 2FA 验证码缓存（TTL 5 分钟）             |
+| **消息队列**  | `topic:auth.login`                                 | 发布 | 登录成功事件（notification/audit 订阅）  |
+| **消息队列**  | `topic:auth.logout`                                | 发布 | 登出事件（notification 订阅）            |
+| **外部 HTTP** | `POST https://github.com/login/oauth/access_token` | 调用 | GitHub OAuth 换 token                    |
+| **外部 HTTP** | `POST https://oauth2.googleapis.com/token`         | 调用 | Google OAuth 换 token                    |
+
 <!-- CONTENT_END: downstream_data_calls -->
 
 ---
@@ -151,31 +164,33 @@ export async function verify2FA(userId: string, code: string): Promise<TokenPair
 ## 关键数据结构
 
 <!-- CONTENT_START: data_structures -->
+
 ```ts
 // 对外暴露的数据结构（跨模块共享，变更需级联评估）
 export interface TokenPair {
-  access_token: string;   // 短期，默认 15 分钟
-  refresh_token: string;  // 长期，默认 7 天，支持滚动续期
-  token_type: 'Bearer';
-  expires_in: number;
+  access_token: string // 短期，默认 15 分钟
+  refresh_token: string // 长期，默认 7 天，支持滚动续期
+  token_type: 'Bearer'
+  expires_in: number
 }
 
 export interface UserClaims {
-  sub: string;            // 用户 ID
-  username: string;
-  roles: string[];
-  jti: string;            // JWT ID，用于黑名单查询
-  iat: number;
-  exp: number;
+  sub: string // 用户 ID
+  username: string
+  roles: string[]
+  jti: string // JWT ID，用于黑名单查询
+  iat: number
+  exp: number
 }
 
 // 内部数据结构（不对外暴露，可自由重构）
 interface LoginContext {
-  ip: string;
-  userAgent: string;
-  loginType: 'password' | 'oauth-github' | 'oauth-google';
+  ip: string
+  userAgent: string
+  loginType: 'password' | 'oauth-github' | 'oauth-google'
 }
 ```
+
 <!-- CONTENT_END: data_structures -->
 
 ---
@@ -183,6 +198,7 @@ interface LoginContext {
 ## 注意事项
 
 <!-- CONTENT_START: caution -->
+
 - **密码哈希**：必须使用 `bcrypt`（cost ≥ 12），禁止使用 MD5 / SHA1
 - **Token 校验**：所有对外 API 必须经 `verifyAccessToken` 校验后再访问业务逻辑
 - **黑名单一致性**：登出时务必把 `jti` 写入 Redis 黑名单，TTL 等于 token 剩余有效期
@@ -190,6 +206,7 @@ interface LoginContext {
 - **敏感字段隔离**：禁止把 `password_hash` 透传到 `user` 模块以外的任何地方
 - **动态调用告警**：`api-gateway` 通过反射注入本模块，静态扫描可能漏掉部分调用点
 - **接口签名稳定性**：`verifyAccessToken` 是全系统受保护路由的唯一校验点，改签名前必须走「Step 5.3 级联刷新」
+
 <!-- CONTENT_END: caution -->
 
 ---
@@ -197,6 +214,7 @@ interface LoginContext {
 ## 相关文件
 
 <!-- CONTENT_START: related_files -->
+
 ```
 src/auth/controller.ts     — HTTP 入口层（对应「入口点」章节）
 src/auth/service.ts        — 业务逻辑层，核心导出符号
@@ -207,6 +225,7 @@ src/auth/session.ts        — Redis 会话读写封装
 src/auth/types.ts          — 对外数据结构定义（TokenPair / UserClaims）
 tests/auth/*.spec.ts       — 单元测试（代表性 3 个）
 ```
+
 <!-- CONTENT_END: related_files -->
 
 ---
@@ -214,9 +233,11 @@ tests/auth/*.spec.ts       — 单元测试（代表性 3 个）
 ## 备注
 
 <!-- CONTENT_START: notes -->
+
 - 本文件为**示例档案**，用于演示 15 版规范下模块档案的完整形态
 - 粒度裁决记录：曾评估将 `oauth.ts` 独立为模块，因外部只通过 `login()` 统一入口调用（入口收敛原则），最终归入本模块
 - 时效性说明：`LAST_ANALYZED = 2026-07-01`，若模块内文件在此日期后有 commit，Agent 加载前应触发时效性校验（15 版 Step 6）
+
 <!-- CONTENT_END: notes -->
 
 ---

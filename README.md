@@ -11,19 +11,19 @@ DSH Agent 跨会话全局记忆插件（toolkit 形态）。数据仅存本机 `
 
 ## 工具
 
-| 工具 | 参数 | 行为 |
-|---|---|---|
-| `memory_save` | `key*`, `category*`, `content*`, `summary?`, `tags?` | 创建或覆盖一条记忆 |
-| `memory_recall` | `key*` | 按 key 返回该条完整内容 |
-| `memory_search` | `query*`, `category?`, `tag?`, `limit?` | 对 key/content/tags 做大小写不敏感子串搜索，返回摘要 |
-| `memory_delete` | `key*` | 删除一条记忆 |
+| 工具            | 参数                                                 | 行为                                                 |
+| --------------- | ---------------------------------------------------- | ---------------------------------------------------- |
+| `memory_save`   | `key*`, `category*`, `content*`, `summary?`, `tags?` | 创建或覆盖一条记忆                                   |
+| `memory_recall` | `key*`                                               | 按 key 返回该条完整内容                              |
+| `memory_search` | `query*`, `category?`, `tag?`, `limit?`              | 对 key/content/tags 做大小写不敏感子串搜索，返回摘要 |
+| `memory_delete` | `key*`                                               | 删除一条记忆                                         |
 
 ## 用户命令
 
-| 命令 | 语法 | 行为 |
-|---|---|---|
-| `/memory_save` | `/memory_save <key> <content...>` | 直接保存；category 默认 `general`，summary 自动截取 |
-| `/memory_delete` | `/memory_delete <key>` | 直接删除 |
+| 命令             | 语法                              | 行为                                                |
+| ---------------- | --------------------------------- | --------------------------------------------------- |
+| `/memory_save`   | `/memory_save <key> <content...>` | 直接保存；category 默认 `general`，summary 自动截取 |
+| `/memory_delete` | `/memory_delete <key>`            | 直接删除                                            |
 
 命令在 UI 命令面执行，内容不经过 LLM、不进模型历史、不占 token。
 

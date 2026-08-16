@@ -16,55 +16,55 @@
 
 ### 📐 阶段一：项目工作流分析（首次使用必须先完成）
 
-| 场景 | 指令示例 |
-|------|---------|
-| 整体分析（首次推荐，先预览后确认） | `分析项目工作流` |
-| 一键自动分析（跳过确认直接写入） | `分析项目工作流 --auto` |
-| 单模块分析 | `分析编译流程` / `分析测试流程` / `分析分支提交规范` |
-| 重新分析（覆盖自动生成内容） | `重新分析编译流程模块` |
-| 查看阶段一完善度评分 | `查看工作流完善度` |
-| **宣告阶段一完成**（解锁阶段三） | `完成项目工作流分析` |
+| 场景                               | 指令示例                                             |
+| ---------------------------------- | ---------------------------------------------------- |
+| 整体分析（首次推荐，先预览后确认） | `分析项目工作流`                                     |
+| 一键自动分析（跳过确认直接写入）   | `分析项目工作流 --auto`                              |
+| 单模块分析                         | `分析编译流程` / `分析测试流程` / `分析分支提交规范` |
+| 重新分析（覆盖自动生成内容）       | `重新分析编译流程模块`                               |
+| 查看阶段一完善度评分               | `查看工作流完善度`                                   |
+| **宣告阶段一完成**（解锁阶段三）   | `完成项目工作流分析`                                 |
 
 ### 📦 阶段二：业务模块分析（随时可用，独立进行）
 
-| 场景 | 指令示例 |
-|------|---------|
-| 分析所有业务模块 | `分析所有业务模块` |
-| 分析指定模块 | `分析 user-auth 模块` |
-| 完善指定模块 | `完善 user-auth 模块` |
-| **建立/刷新模块台账**（15 强化） | `建立模块台账` / `刷新模块台账` |
-| 局部刷新台账 | `更新 <模块名> 模块台账` / `刷新最近改动的模块台账` |
-| 台账时效性体检 | `检查模块台账时效性` / `体检模块台账` |
-| **画业务调用链**（16 推导） | `画出 <入口> 的调用链` / `<业务> 从入口到落库的全流程` |
-| 临时推导不落档（v1.8） | `画出 <入口> 的调用链 --no-persist` |
+| 场景                                      | 指令示例                                                                                   |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------ |
+| 分析所有业务模块                          | `分析所有业务模块`                                                                         |
+| 分析指定模块                              | `分析 user-auth 模块`                                                                      |
+| 完善指定模块                              | `完善 user-auth 模块`                                                                      |
+| **建立/刷新模块台账**（15 强化）          | `建立模块台账` / `刷新模块台账`                                                            |
+| 局部刷新台账                              | `更新 <模块名> 模块台账` / `刷新最近改动的模块台账`                                        |
+| 台账时效性体检                            | `检查模块台账时效性` / `体检模块台账`                                                      |
+| **画业务调用链**（16 推导）               | `画出 <入口> 的调用链` / `<业务> 从入口到落库的全流程`                                     |
+| 临时推导不落档（v1.8）                    | `画出 <入口> 的调用链 --no-persist`                                                        |
 | 列出 / 确认 / 刷新 / 作废链路档案（v1.8） | `列出已推导的调用链` / `确认调用链 <slug>` / `刷新调用链档案 <slug>` / `作废调用链 <slug>` |
-| 影响面分析 | `分析 <模块.接口> 的影响面` / `如果我改 <接口> 会影响谁` |
-| 数据资源反查 | `谁写入了 <表名/topic>` / `<资源> 的所有调用来源` |
-| 刷新 topic 反查表 | `刷新 topic 反查表` |
+| 影响面分析                                | `分析 <模块.接口> 的影响面` / `如果我改 <接口> 会影响谁`                                   |
+| 数据资源反查                              | `谁写入了 <表名/topic>` / `<资源> 的所有调用来源`                                          |
+| 刷新 topic 反查表                         | `刷新 topic 反查表`                                                                        |
 
 ### 🛠️ 阶段三：开发维护任务（需阶段一完成后解锁）
 
-| 场景 | 指令示例 |
-|------|---------|
-| **创建研发任务**（需求 / Bug / 重构） | `创建任务: 在订单页增加导出 Excel 按钮` |
-| **查看 / 继续任务** | `查看进行中的任务` / `继续任务` / `继续任务 <task-id>` |
-| **归档任务** | `归档任务 20260526-add-oauth-login` |
-| **废弃任务** | `废弃任务 20260526-add-oauth-login` |
-| 创建分支 / PR（需 Git 平台能力） | `创建 feature/add-login 分支` / `创建 PR：feature/x → master` |
+| 场景                                  | 指令示例                                                      |
+| ------------------------------------- | ------------------------------------------------------------- |
+| **创建研发任务**（需求 / Bug / 重构） | `创建任务: 在订单页增加导出 Excel 按钮`                       |
+| **查看 / 继续任务**                   | `查看进行中的任务` / `继续任务` / `继续任务 <task-id>`        |
+| **归档任务**                          | `归档任务 20260526-add-oauth-login`                           |
+| **废弃任务**                          | `废弃任务 20260526-add-oauth-login`                           |
+| 创建分支 / PR（需 Git 平台能力）      | `创建 feature/add-login 分支` / `创建 PR：feature/x → master` |
 
 ### 🩺 治理：工作流自检（随时可用，不占阶段）
 
-| 场景 | 指令示例 |
-|------|---------|
-| **启动全量自检**（检查 13 个流程 + 任务 SOP + 关键流闭环） | `启动工作流自检` / `自检工作流` |
-| 单流程自检 | `自检 编译流程` / `自检 分支提交` |
-| 关键流闭环检查 | `自检 关键流` |
-| 查看上次报告 / 添加豁免 | `查看自检报告` / `忽略缺陷 #N` |
+| 场景                                                       | 指令示例                          |
+| ---------------------------------------------------------- | --------------------------------- |
+| **启动全量自检**（检查 13 个流程 + 任务 SOP + 关键流闭环） | `启动工作流自检` / `自检工作流`   |
+| 单流程自检                                                 | `自检 编译流程` / `自检 分支提交` |
+| 关键流闭环检查                                             | `自检 关键流`                     |
+| 查看上次报告 / 添加豁免                                    | `查看自检报告` / `忽略缺陷 #N`    |
 
 > 💡 自检是**元流程**（SOP 的 Code Review），与阶段一完善度评分是两套体系：后者看“有没有写”，前者看“写得好不好”。详见 [`workflows/14-workflow-self-check.md`](.agent-workflow/workflows/14-workflow-self-check.md)。
 
 > 💡 详细使用方法见 [.agent-workflow/guide.md](.agent-workflow/guide.md)，自动分析机制见 [analyzer-instructions.md](.agent-workflow/analyzer-instructions.md)。
-> 
+>
 > ⚠️ **默认预览确认机制**：分析指令默认会先输出预览报告并等待你确认，避免误覆盖；只有追加 `--auto` 才会跳过确认直接写入。
 
 ---
@@ -73,22 +73,22 @@
 
 本工作流分为三个阶段，**阶段三依赖阶段一完成后才能解锁**。详细评分规则见 [lifecycle.md](.agent-workflow/lifecycle.md)。
 
-| 阶段 | 名称 | 前置条件 |
-|:----:|------|---------|
-| **一** | 📐 项目工作流分析 | 无（首次必做） |
-| **二** | 📦 业务模块分析 | 无（随时可用） |
-| **三** | 🛠️ 开发维护任务 | **阶段一完善度 ≥ 80 分且用户宣告完成** |
+|  阶段  | 名称              | 前置条件                               |
+| :----: | ----------------- | -------------------------------------- |
+| **一** | 📐 项目工作流分析 | 无（首次必做）                         |
+| **二** | 📦 业务模块分析   | 无（随时可用）                         |
+| **三** | 🛠️ 开发维护任务   | **阶段一完善度 ≥ 80 分且用户宣告完成** |
 
 ---
 
 ## 🔰 当前阶段状态
 
-| 项目 | 状态 |
-|------|------|
-| **当前阶段** | 🔴 阶段一未完成（PHASE_1_INITIALIZING） |
-| **完善度得分** | 0 / 100 分 |
-| **阶段三解锁** | 🔴 未解锁（需阶段一完善度 ≥ 80 且用户宣告完成） |
-| **上次分析时间** | - |
+| 项目             | 状态                                            |
+| ---------------- | ----------------------------------------------- |
+| **当前阶段**     | 🔴 阶段一未完成（PHASE_1_INITIALIZING）         |
+| **完善度得分**   | 94 / 100 分                                     |
+| **阶段三解锁**   | 🔴 未解锁（需阶段一完善度 ≥ 80 且用户宣告完成） |
+| **上次分析时间** | 2026-08-17                                      |
 
 > 💡 输入 `查看工作流完善度` 刷新得分；输入 `完成项目工作流分析` 宣告阶段一完成并解锁阶段三。
 
@@ -96,28 +96,29 @@
 
 ## 📊 工作流程状态总览
 
-| 序号 | 流程名称 | 状态 | 最后更新 | 文档链接 |
-|:---:|---------|:----:|:-------:|---------:|
-| 01 | 项目说明 | 🔴 待实现 | - | [查看](.agent-workflow/workflows/01-project-overview.md) |
-| 02 | 规则限制 | 🔴 待实现 | - | [查看](.agent-workflow/workflows/02-rules-constraints.md) |
-| 03 | 开发流程 | 🔴 待实现 | - | [查看](.agent-workflow/workflows/03-development-workflow.md) |
-| 04 | 编译流程 | 🔴 待实现 | - | [查看](.agent-workflow/workflows/04-build-process.md) |
-| 05 | 测试流程 | 🔴 待实现 | - | [查看](.agent-workflow/workflows/05-testing-process.md) |
-| 06 | 发布流程 | 🔴 待实现 | - | [查看](.agent-workflow/workflows/06-release-process.md) |
-| 07 | Bug排查修复 | 🔴 待实现 | - | [查看](.agent-workflow/workflows/07-bug-fixing.md) |
-| 08 | 代码Review | 🔴 待实现 | - | [查看](.agent-workflow/workflows/08-code-review.md) |
-| 09 | 模块分析 | 🔴 待实现 | - | [查看](.agent-workflow/workflows/09-module-analysis.md) |
-| 10 | 代码优化 | 🔴 待实现 | - | [查看](.agent-workflow/workflows/10-code-optimization.md) |
-| 11 | 分支提交 | 🔴 待实现 | - | [查看](.agent-workflow/workflows/11-branch-commit.md) |
-| 12 | PR提交 | 🔴 待实现 | - | [查看](.agent-workflow/workflows/12-pull-request.md) |
-| 13 | CI/CD流程 | 🔴 待实现 | - | [查看](.agent-workflow/workflows/13-ci-cd-pipeline.md) |
-| 14 🔧 | 工作流自检（META） | 🟢 模板自带 | N/A | [查看](.agent-workflow/workflows/14-workflow-self-check.md) |
-| 15 🔧 | 模块台账（阶段二强化） | 🟢 模板自带 | N/A | [查看](.agent-workflow/workflows/15-module-inventory.md) |
-| 16 🔧 | 业务调用链推导 | 🟢 模板自带 | N/A | [查看](.agent-workflow/workflows/16-call-chain-derivation.md) |
+| 序号  | 流程名称               |    状态     |  最后更新  |                                                      文档链接 |
+| :---: | ---------------------- | :---------: | :--------: | ------------------------------------------------------------: |
+|  01   | 项目说明               |  🟢 已完成  | 2026-08-17 |      [查看](.agent-workflow/workflows/01-project-overview.md) |
+|  02   | 规则限制               |  🟢 已完成  | 2026-08-17 |     [查看](.agent-workflow/workflows/02-rules-constraints.md) |
+|  03   | 开发流程               |  🟢 已完成  | 2026-08-17 |  [查看](.agent-workflow/workflows/03-development-workflow.md) |
+|  04   | 编译流程               |  🟢 已完成  | 2026-08-17 |         [查看](.agent-workflow/workflows/04-build-process.md) |
+|  05   | 测试流程               |  🟢 已完成  | 2026-08-17 |       [查看](.agent-workflow/workflows/05-testing-process.md) |
+|  06   | 发布流程               | 🟡 部分完成 | 2026-08-17 |       [查看](.agent-workflow/workflows/06-release-process.md) |
+|  07   | Bug排查修复            | 🟡 部分完成 | 2026-08-17 |            [查看](.agent-workflow/workflows/07-bug-fixing.md) |
+|  08   | 代码Review             | 🟡 部分完成 | 2026-08-17 |           [查看](.agent-workflow/workflows/08-code-review.md) |
+|  09   | 模块分析               |  🟢 已完成  | 2026-08-17 |       [查看](.agent-workflow/workflows/09-module-analysis.md) |
+|  10   | 代码优化               | 🟡 部分完成 | 2026-08-17 |     [查看](.agent-workflow/workflows/10-code-optimization.md) |
+|  11   | 分支提交               |  🟢 已完成  | 2026-08-17 |         [查看](.agent-workflow/workflows/11-branch-commit.md) |
+|  12   | PR提交                 | 🟡 部分完成 | 2026-08-17 |          [查看](.agent-workflow/workflows/12-pull-request.md) |
+|  13   | CI/CD流程              |  🔴 待实现  | 2026-08-17 |        [查看](.agent-workflow/workflows/13-ci-cd-pipeline.md) |
+| 14 🔧 | 工作流自检（META）     | 🟢 模板自带 |    N/A     |   [查看](.agent-workflow/workflows/14-workflow-self-check.md) |
+| 15 🔧 | 模块台账（阶段二强化） | 🟢 模板自带 |    N/A     |      [查看](.agent-workflow/workflows/15-module-inventory.md) |
+| 16 🔧 | 业务调用链推导         | 🟢 模板自带 |    N/A     | [查看](.agent-workflow/workflows/16-call-chain-derivation.md) |
 
 **状态说明**：🔴 待实现（TODO） | 🟡 部分完成（PARTIAL） | 🟢 已完成（DONE） | 🟢 模板自带（META，不计入完善度评分，`LAST_ANALYZED` 固定为 `N/A`）
 
 > 🔧 **META 标记说明**：序号带 🔧 的是元流程/治理层能力（14 自检、15 模块台账、16 调用链推导）——本身不被项目侦察填充，不计入阶段一完善度评分，属于模板自带的常驻能力。其中：
+>
 > - **15 模块台账** 通过 03/11 的强制挂钩点驱动 —— 详见 15 触发词与 03 Step 3.1 / Step 10.1 / 11 提交前置校验
 > - **16 调用链推导** 建立在 15 台账之上，按需启动，不做强制
 
@@ -184,12 +185,14 @@ flowchart LR
 由 `09-模块分析` 流程首次生成、`15-模块台账` 流程持续维护，产物写入 [`.agent-workflow/modules/`](.agent-workflow/modules/) 目录，**v1.9 采用分层结构**。
 
 > 💡 **入口清单**（v1.9 三级下钻）：
+>
 > - **L1** [`modules/index.md`](.agent-workflow/modules/index.md) — 顶层入口，只列 Group + 顶层单模块（含时效状态列）
 > - **L2** [`modules/<group>/group.md`](.agent-workflow/modules/) — Group 索引，含子模块清单 + 内部结构关系图
 > - **L3** [`modules/<top>.md`](.agent-workflow/modules/) 或 [`modules/<group>/<sub>.md`](.agent-workflow/modules/) — 具体模块档案
 > - [`modules/_topics.md`](.agent-workflow/modules/_topics.md) — MQ topic 反查表（15 Step 5.4 顺带聚合，供 16 链路推导消解 MQ 隐式调用）
 >
 > ⚠️ **Agent 硬性约束**（15 强化 + v1.9 分层升级）：
+>
 > 1. 每次完成模块分析或更新模块内容后，**必须**同步更新 `modules/index.md` 顶层索引（仅当 Group / 顶层单模块发生变化时）；若变动发生在某 Group 内部，同时必须更新 `<group>/group.md`（v1.9 Step 5.7）
 > 2. 任何**代码修改类任务开始前**必须先按 [15 Step 4](.agent-workflow/workflows/15-module-inventory.md) 三级下钻查台账定位相关模块
 > 3. 任何**代码修改类任务完成前**必须按 [15 Step 5](.agent-workflow/workflows/15-module-inventory.md) 刷新受影响模块档案**并执行 15 Step 5.5 链路档案级联失效**（v1.8）**与 Step 5.7 Group 索引联动更新**（v1.9）
@@ -202,11 +205,13 @@ flowchart LR
 由 `16-调用链推导` 工作流 Step 5-6 **默认落档**产生，写入 [`.agent-workflow/chains/`](.agent-workflow/chains/) 目录，用于跨会话复用已推导的业务链路，避免重复扫代码。
 
 > 💡 **入口清单**：
+>
 > - [`chains/index.md`](.agent-workflow/chains/index.md) — 链路总索引，Agent 复用命中检查入口，含状态/时效/关键词
 > - [`chains/chains-guide.md`](.agent-workflow/chains/chains-guide.md) — 目录使用指南与生命周期图
 > - [`chains/<chain-slug>.md`](.agent-workflow/chains/) — 具体链路档案，命名为 `<forward|reverse|data-lookup>-<entry-slug>.md`
 >
 > ⚠️ **Agent 硬性约束**（v1.8）：
+>
 > 1. 每次完成链路推导后，**必须**同步写入 `chains/<slug>.md` 并更新 `chains/index.md`（除非用户显式使用 `--no-persist`）
 > 2. 接到链路推导类任务时必须先执行 [16 Step 0.4 复用命中检查](.agent-workflow/workflows/16-call-chain-derivation.md#step-0--前置门禁硬性)：命中且 STATUS ∈ {DERIVED, VERIFIED} → 直接加载复用并向用户声明，不重扫代码
 > 3. Agent **不得**自作主张将 `STATUS: DERIVED → VERIFIED`；`VERIFIED` 必须由用户显式确认（`确认调用链 <slug>` 或回复“链路正确/已核对”）
@@ -229,16 +234,16 @@ flowchart LR
 
 **Agent 扫描渲染规范**（响应 `查看进行中的任务` 时遵循）：
 
-| 列 | 来源字段 | 说明 |
-|----|---------|------|
-| 任务 ID | 文件名（去 `.md`）或元数据 `TASK_ID` | 形如 `YYYYMMDD-slug` |
-| 类型 | 元数据 `TASK_TYPE` | feature / bugfix / refactor |
-| 状态 | 元数据 `STATUS` | 配合上方 emoji 渲染 |
-| 分支 | 元数据 `BRANCH` | 可为空 |
-| 负责人 | 元数据 `OWNER` | 可为空 |
-| 创建时间 | 元数据 `CREATED` | - |
-| 最后更新 | 元数据 `LAST_UPDATED` | 默认按此列倒序 |
-| 文件链接 | 相对路径 | `[查看](.agent-workflow/tasks/_active/<id>.md)` |
+| 列       | 来源字段                             | 说明                                            |
+| -------- | ------------------------------------ | ----------------------------------------------- |
+| 任务 ID  | 文件名（去 `.md`）或元数据 `TASK_ID` | 形如 `YYYYMMDD-slug`                            |
+| 类型     | 元数据 `TASK_TYPE`                   | feature / bugfix / refactor                     |
+| 状态     | 元数据 `STATUS`                      | 配合上方 emoji 渲染                             |
+| 分支     | 元数据 `BRANCH`                      | 可为空                                          |
+| 负责人   | 元数据 `OWNER`                       | 可为空                                          |
+| 创建时间 | 元数据 `CREATED`                     | -                                               |
+| 最后更新 | 元数据 `LAST_UPDATED`                | 默认按此列倒序                                  |
+| 文件链接 | 相对路径                             | `[查看](.agent-workflow/tasks/_active/<id>.md)` |
 
 若 `_active/` 目录为空（仅含 `.gitkeep`），输出：`当前无进行中的任务，可通过"创建任务: <描述>"创建。`
 
@@ -290,10 +295,10 @@ flowchart TD
 
 当用户输入 `创建任务: <描述>` 或在对话中提出需求时，Agent **必须先**读取本文件顶部的 `LIFECYCLE_PHASE` 元数据：
 
-| `LIFECYCLE_PHASE` 值 | 处理方式 |
-|---------------------|---------|
-| `PHASE_1_COMPLETED` 或 `PHASE_3_OPERATIONAL` | ✅ 正常进入 Step 1 |
-| `PHASE_1_INITIALIZING` | ⚠️ 软阻断：输出提示要求用户先完善阶段一；允许用户追加 `--force` 强制跳过 |
+| `LIFECYCLE_PHASE` 值                         | 处理方式                                                                 |
+| -------------------------------------------- | ------------------------------------------------------------------------ |
+| `PHASE_1_COMPLETED` 或 `PHASE_3_OPERATIONAL` | ✅ 正常进入 Step 1                                                       |
+| `PHASE_1_INITIALIZING`                       | ⚠️ 软阻断：输出提示要求用户先完善阶段一；允许用户追加 `--force` 强制跳过 |
 
 **软阻断提示模板**：
 
@@ -342,16 +347,17 @@ Step 0 通过后，按以下顺序处理：
    - 在「进度日志」追加一条：`` `YYYY-MM-DD HH:MM` 阻塞解除，恢复执行 Step X.X``
 
 > 💡 「状态」列标准词汇表：`跟进中`（阻塞中，待解除）/ `已解除`（阻塞已解除，记录留档）。Step 3.3 的“未解除项”识别即依赖此约定。
+
 6. **跳转专项流程时参考 `RELATED_WORKFLOWS`**：例如提交阶段跳到 [11-branch-commit](.agent-workflow/workflows/11-branch-commit.md)
 
 ### Step 3 · 中断恢复（Resume）
 
 Resume 有三种触发方式，任一命中时 Agent **必须**按下列步骤执行：
 
-| 触发方式 | 说明 |
-|---------|------|
-| **被动扫描** | 会话启动时（新会话 / 崩溃后）自动扫描 `tasks/_active/` |
-| **主动指令** | 用户输入 `继续任务` / `继续任务 <task-id>` |
+| 触发方式     | 说明                                                        |
+| ------------ | ----------------------------------------------------------- |
+| **被动扫描** | 会话启动时（新会话 / 崩溃后）自动扫描 `tasks/_active/`      |
+| **主动指令** | 用户输入 `继续任务` / `继续任务 <task-id>`                  |
 | **自然语言** | 用户口头表达“接着上次的任务继续” / “那个任务进度怎么样了”等 |
 
 **恢复步骤**：
