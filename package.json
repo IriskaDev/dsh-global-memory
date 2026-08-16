@@ -1,0 +1,27 @@
+{
+  "name": "@dsh-external/dsh-global-memory",
+  "version": "0.0.1",
+  "description": "DSH Agent 跨会话全局记忆插件：会话开始注入条目级索引，模型按需 recall 记忆全文，显式保存/搜索/删除，数据仅存本机 $DSH_HOME/memory/",
+  "private": true,
+  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/types/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "license": "BSD-3-Clause",
+  "peerDependencies": {
+    "@deepseek-ai/dsh-llm": ">=0.0.1-rc <2",
+    "@deepseek-ai/dsh-tools": ">=0.0.1-rc <2",
+    "cordis": ">=4.0.0-rc <5",
+    "schemastery": "^3.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "typescript": "^5.9.0"
+  },
+  "scripts": {
+    "build": "bash scripts/build.sh",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}
