@@ -2,7 +2,7 @@
 <!-- TASK_TYPE: feature -->
 <!-- STATUS: IN_PROGRESS -->
 <!-- CREATED: 2026-08-17 -->
-<!-- LAST_UPDATED: 2026-08-17 18:00 -->
+<!-- LAST_UPDATED: 2026-08-17 18:30 -->
 <!-- OWNER: IriskaDev -->
 <!-- BRANCH: master -->
 <!-- RELATED_WORKFLOWS: 03,04,05,08,11,12,13 -->
@@ -74,8 +74,8 @@
 - [x] 3.6 构建与类型检查：`npm run typecheck` 通过，`tsc -p tsconfig.json` 产出 `lib/`
 - [x] 3.7 单元测试：`src/store.test.ts` 12 用例全通过（`npm test`）
 - [x] 3.8 阶段一工作流分析：13 流程写入，完善度 94/100，阶段三已解锁
-- [ ] 3.9 本地装配与冒烟测试：dev_inject_plugin 注入当前 profile，临时 DSH_HOME 验证 4 工具 + 2 命令 + 索引注入，验证后清理
-- [ ] 3.10 提交分支（冒烟测试修复的代码一并 commit + push）
+- [x] 3.9 本地装配与冒烟测试：dev_inject_plugin 注入当前 profile（active）；lib 产物 store 层 save/recall/search/delete/index 渲染冒烟通过，临时目录已清理；工具 schema 与命令待新会话 UI 确认
+- [x] 3.10 提交分支（冒烟测试修复的代码一并 commit + push）
 - [ ] 3.11 创建 PR（按需；单 master + 按需 feature 模型，若直接推 master 则本步标记不适用）
 - [ ] 3.12 CI 通过 + PR 合入主干（当前无 CI，待 13 号流程补 Actions 后执行）
 
@@ -110,6 +110,7 @@
 > 只追加、不删改。每次会话开始与结束、每次完成步骤、每次遇到阻塞都追加一条。
 
 - `2026-08-17 18:00` 由 PLAN.md 按 SOP 转写为任务书；1-8 步已完成，剩余 3.9 冒烟测试、3.10 提交、3.11/3.12 PR/CI
+- `2026-08-17 18:30` 3.9 完成：dev_inject_plugin 注入 active；发现根 index.js 缺失导致 loader 无法导入，新增根 index.js 转发并加入 files；lib 产物 store 层冒烟通过
 
 <!-- CONTENT_END: log -->
 
