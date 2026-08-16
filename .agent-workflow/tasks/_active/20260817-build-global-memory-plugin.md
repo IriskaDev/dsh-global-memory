@@ -76,8 +76,8 @@
 - [x] 3.8 阶段一工作流分析：13 流程写入，完善度 94/100，阶段三已解锁
 - [x] 3.9 本地装配与冒烟测试：dev_inject_plugin 注入当前 profile（active）；lib 产物 store 层 save/recall/search/delete/index 渲染冒烟通过，临时目录已清理；工具 schema 与命令待新会话 UI 确认
 - [x] 3.10 提交分支（冒烟测试修复的代码一并 commit + push）
-- [ ] 3.11 创建 PR（按需；单 master + 按需 feature 模型，若直接推 master 则本步标记不适用）
-- [ ] 3.12 CI 通过 + PR 合入主干（当前无 CI，待 13 号流程补 Actions 后执行）
+- [x] 3.11 创建 PR（从 feature/20260817-build-global-memory-plugin 发起，合回 master）
+- [ ] 3.12 CI 通过 + PR 合入主干（当前无 CI，本地门禁 typecheck/lint/format/test 已通过；PR 合入后本步完成）
 
 <!-- CONTENT_END: steps -->
 
@@ -111,6 +111,7 @@
 
 - `2026-08-17 18:00` 由 PLAN.md 按 SOP 转写为任务书；1-8 步已完成，剩余 3.9 冒烟测试、3.10 提交、3.11/3.12 PR/CI
 - `2026-08-17 18:30` 3.9 完成：dev_inject_plugin 注入 active；发现根 index.js 缺失导致 loader 无法导入，新增根 index.js 转发并加入 files；lib 产物 store 层冒烟通过
+- `2026-08-17 18:40` 3.11 创建 feature 分支并提交任务书进度，准备发起 PR
 
 <!-- CONTENT_END: log -->
 
