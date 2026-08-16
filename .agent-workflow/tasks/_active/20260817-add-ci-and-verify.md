@@ -2,7 +2,7 @@
 <!-- TASK_TYPE: feature -->
 <!-- STATUS: IN_PROGRESS -->
 <!-- CREATED: 2026-08-17 -->
-<!-- LAST_UPDATED: 2026-08-17 19:10 -->
+<!-- LAST_UPDATED: 2026-08-17 19:40 -->
 <!-- OWNER: IriskaDev -->
 <!-- BRANCH: master -->
 <!-- RELATED_WORKFLOWS: 03,04,05,11,12,13 -->
@@ -60,7 +60,7 @@
 - [x] 3.3 更新 13 号流程文档为 PARTIAL，记录 CI 配置与 typecheck/test 未接入原因
 - [x] 3.4 本地门禁通过（typecheck/lint/format:check）
 - [x] 3.5 提交 feature 分支并创建 PR
-- [ ] 3.6 PR 合入 master
+- [x] 3.6 PR 合入 master
 - [ ] 3.7 归档任务文件
 - [ ] 3.8 新会话验证（工具 schema / slash 命令 / 索引注入），记录结论
 
@@ -86,6 +86,7 @@
 
 - `2026-08-17 19:10` 创建任务，需求已与用户对齐（补 CI + 新会话验证）
 - `2026-08-17 19:20` 3.2-3.4 完成：新增 ci.yml，13 号流程更新为 PARTIAL，本地门禁通过
+- `2026-08-17 19:40` 3.5-3.6 完成：PR #2 已创建并合入 master；待新会话验证后归档
 
 <!-- CONTENT_END: log -->
 
