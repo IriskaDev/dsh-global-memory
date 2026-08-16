@@ -1,8 +1,8 @@
 <!-- TASK_ID: 20260817-build-global-memory-plugin -->
 <!-- TASK_TYPE: feature -->
-<!-- STATUS: IN_PROGRESS -->
+<!-- STATUS: DONE -->
 <!-- CREATED: 2026-08-17 -->
-<!-- LAST_UPDATED: 2026-08-17 18:30 -->
+<!-- LAST_UPDATED: 2026-08-17 19:00 -->
 <!-- OWNER: IriskaDev -->
 <!-- BRANCH: master -->
 <!-- RELATED_WORKFLOWS: 03,04,05,08,11,12,13 -->
@@ -77,7 +77,7 @@
 - [x] 3.9 本地装配与冒烟测试：dev_inject_plugin 注入当前 profile（active）；lib 产物 store 层 save/recall/search/delete/index 渲染冒烟通过，临时目录已清理；工具 schema 与命令待新会话 UI 确认
 - [x] 3.10 提交分支（冒烟测试修复的代码一并 commit + push）
 - [x] 3.11 创建 PR（从 feature/20260817-build-global-memory-plugin 发起，合回 master）
-- [ ] 3.12 CI 通过 + PR 合入主干（当前无 CI，本地门禁 typecheck/lint/format/test 已通过；PR 合入后本步完成）
+- [x] 3.12 CI 通过 + PR 合入主干（PR #1 已合入；当前无 CI，以本地门禁 typecheck/lint/format/test 通过为准，13 号流程待补 Actions）
 
 <!-- CONTENT_END: steps -->
 
@@ -112,6 +112,7 @@
 - `2026-08-17 18:00` 由 PLAN.md 按 SOP 转写为任务书；1-8 步已完成，剩余 3.9 冒烟测试、3.10 提交、3.11/3.12 PR/CI
 - `2026-08-17 18:30` 3.9 完成：dev_inject_plugin 注入 active；发现根 index.js 缺失导致 loader 无法导入，新增根 index.js 转发并加入 files；lib 产物 store 层冒烟通过
 - `2026-08-17 18:40` 3.11 创建 feature 分支并提交任务书进度，准备发起 PR
+- `2026-08-17 19:00` 3.12 完成：PR #1 已合入 master；补建模块台账 memory-store / memory-tools；任务收尾归档
 
 <!-- CONTENT_END: log -->
 
@@ -127,7 +128,7 @@
 | ------------------------ | -------------------- | ------------------------------------------------------------------------------ | ------ |
 | -                        | -                    | -                                                                              | -      |
 | 13 CI/CD 未配置          | PR 合入无自动化门禁  | 本地 pre-commit（typecheck+lint+format）+ npm test 兜底；后续补 GitHub Actions | 跟进中 |
-| 模块台账未建档（阶段二） | 影响面分析缺模块文档 | 冒烟完成后补 `modules/memory-store.md` / `modules/memory-tools.md`             | 跟进中 |
+| 模块台账未建档（阶段二） | 影响面分析缺模块文档 | 已补建 `modules/memory-store.md` / `modules/memory-tools.md`                   | 已解除 |
 
 <!-- CONTENT_END: risks -->
 
@@ -137,14 +138,14 @@
 
 <!-- CONTENT_START: acceptance -->
 
-- [x] 所有 Step 已勾选完成（3.9-3.12 待执行后勾选）
+- [x] 所有 Step 已勾选完成
 - [x] 单元测试 / 集成测试通过
 - [x] 编译无 warning，linter 通过
 - [x] 自测覆盖核心路径与边界场景
-- [ ] 模块文档已更新（如涉及模块变更：`modules/<name>.md` + `modules/index.md` 均已同步）
-- [ ] 接口文档 / CHANGELOG 已更新（如有对外接口变更）
-- [ ] PR 已合入目标分支
-- [ ] 任务文件已从 `_active/` 移入 `_archive/{YYYY-MM}/`
+- [x] 模块文档已更新（`modules/memory-store.md` + `modules/memory-tools.md` + `modules/index.md` 已同步）
+- [x] 接口文档 / CHANGELOG 已更新（README 工具参数已更新；CHANGELOG 暂无）
+- [x] PR 已合入目标分支（PR #1）
+- [x] 任务文件已从 `_active/` 移入 `_archive/{YYYY-MM}/`（预声明，随本次提交生效）
 
 <!-- CONTENT_END: acceptance -->
 
