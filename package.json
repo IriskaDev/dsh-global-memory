@@ -1,6 +1,6 @@
 {
   "name": "@dsh-external/dsh-global-memory",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "DSH Agent 跨会话全局记忆插件：会话开始注入条目级索引，模型按需 recall 记忆全文，显式保存/搜索/删除，数据仅存本机 $DSH_HOME/memory/",
   "private": true,
   "type": "module",
