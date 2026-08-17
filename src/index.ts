@@ -10,6 +10,7 @@
  * - memory_recall(key) 是唯一的全文查阅入口。
  */
 import type { Context } from 'cordis'
+import { createUserMessage } from '@deepseek-ai/dsh-llm'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import z from 'schemastery'
 import {
@@ -22,6 +23,12 @@ import {
   searchMemories,
 } from './store.js'
 
+declare module '@deepseek-ai/dsh-llm' {
+  interface MessageSourceMap {
+    'memory-index': { kind: 'memory-index'; plugin: string }
+  }
+}
+
 export const name = '@dsh-external/dsh-global-memory'
 export const inject = ['tools', 'commands']
 
@@ -30,7 +37,7 @@ export type Config = Record<string, never>
 export const Config = z.object({})
 
 /** 每个 session 的索引快照缓存。命令路径落盘后删除，使下一次 pre-step 重新渲染。 */
-const indexSnapshotCache = new WeakMap<object, string>()
+const indexSnapshotCache = new Map<string, string>()
 
 function memoryDir(): string {
   return resolveMemoryDir()
@@ -42,9 +49,22 @@ function sessionOf(agent: unknown): object | null {
   return typeof session === 'object' && session !== null ? session : null
 }
 
-function clearSessionIndexCache(agent: unknown): void {
+function sessionIdOf(agent: unknown): string | null {
   const session = sessionOf(agent)
-  if (session) indexSnapshotCache.delete(session)
+  const id = (session as { id?: unknown } | null)?.id
+  return typeof id === 'string' && id.length > 0 ? id : null
+}
+
+function clearSessionIndexCache(agent: unknown): void {
+  const sessionId = sessionIdOf(agent)
+  if (sessionId) indexSnapshotCache.delete(sessionId)
+}
+
+export function createMemoryIndexMessage(text: string) {
+  return createUserMessage({
+    content: [{ type: 'text', text }],
+    source: { kind: 'memory-index', plugin: name },
+  })
 }
 
 function formatRecord(record: NonNullable<Awaited<ReturnType<typeof readMemory>>>): string {
@@ -182,16 +202,12 @@ export function apply(ctx: Context, _config: Config): void {
     const decision = await next()
     try {
       if (decision?.kind === 'reject' || !Array.isArray(decision?.messages)) return decision
-      const session = sessionOf(payload?.agent)
-      if (!session) return decision
-      if (indexSnapshotCache.has(session)) return decision
+      const sessionId = sessionIdOf(payload?.agent)
+      if (!sessionId) return decision
+      if (indexSnapshotCache.has(sessionId)) return decision
       const text = renderMemoryIndex(loadIndexSync(memoryDir()))
-      indexSnapshotCache.set(session, text)
-      const message = {
-        role: 'user',
-        content: [{ type: 'text', text }],
-        source: { kind: 'memory-index', plugin: name },
-      }
+      indexSnapshotCache.set(sessionId, text)
+      const message = createMemoryIndexMessage(text)
       return { ...decision, messages: [...decision.messages, message] }
     } catch {
       return decision

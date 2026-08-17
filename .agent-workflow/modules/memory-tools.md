@@ -23,6 +23,7 @@
 - `src/index.ts` 注册 `memory_save` / `memory_recall` / `memory_search` / `memory_delete` 四个工具
 - 注册 `/memory_save` / `/memory_delete` 用户命令：直接落盘，不经 LLM，结果不进模型历史
 - 通过 `agent/pre-step` 事件在每会话首 step 注入一次条目级索引快照（user-role 消息，`source.kind = "memory-index"`，不受 preset `includeRuntimeContext: false` 抑制）
+- 注入消息通过 `@deepseek-ai/dsh-llm` 的 `createUserMessage()` 创建，保证携带合法 `id`（DSH 会话加载强制校验）
 
 <!-- CONTENT_END: overview -->
 
@@ -46,7 +47,7 @@
 
 <!-- CONTENT_START: data_flow -->
 
-模型工具调用 → `memory_*` 工具 execute → 调用 `store.ts` 读写；用户命令 → command handler → 调用 `store.ts` 读写，并清除该会话索引快照缓存；`agent/pre-step` 首次放行后读取 `index.json` 渲染索引快照，追加为 user-role 消息注入历史。
+模型工具调用 → `memory_*` 工具 execute → 调用 `store.ts` 读写；用户命令 → command handler → 调用 `store.ts` 读写，并清除该会话索引快照缓存；`agent/pre-step` 首次放行后读取 `index.json` 渲染索引快照，通过 `createMemoryIndexMessage()` 追加为 user-role 消息注入历史（缓存按 session id 维护）。
 
 <!-- CONTENT_END: data_flow -->
 
@@ -69,6 +70,7 @@
 <!-- CONTENT_START: upstream_dependencies -->
 
 - `@deepseek-ai/dsh-tools`（defineTool）
+- `@deepseek-ai/dsh-llm`（createUserMessage）
 - `cordis`（Context）
 - `schemastery`（Config schema）
 - 内部 `src/store.ts`
@@ -102,7 +104,8 @@
 
 <!-- CONTENT_START: notes -->
 
-- 注入的索引快照按 session 缓存；工具路径 save/delete 不刷新，命令路径刷新
+- 注入的索引快照按 session id 缓存；工具路径 save/delete 不刷新，命令路径刷新
+- 注入消息必须携带合法 `id`：DSH 会话加载会校验 `user/message.id`，缺失会导致整会话无法加载
 - 索引注入失败时静默跳过（返回原 decision），不阻塞 pre-step 链路
 - 根 `index.js` 为 loader 导入兼容 shim（dev_inject_plugin 需要）
 
