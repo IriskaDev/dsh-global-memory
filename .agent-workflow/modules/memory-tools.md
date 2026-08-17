@@ -22,7 +22,7 @@
 
 - `src/index.ts` 注册 `memory_save` / `memory_recall` / `memory_search` / `memory_delete` 四个工具
 - 注册 `/memory_save` / `/memory_delete` 用户命令：直接落盘，不经 LLM，结果不进模型历史
-- 通过 `ctx.systemPrompt.context`（order 150）在每会话首 step 注入一次条目级索引快照
+- 通过 `agent/pre-step` 事件在每会话首 step 注入一次条目级索引快照（user-role 消息，`source.kind = "memory-index"`，不受 preset `includeRuntimeContext: false` 抑制）
 
 <!-- CONTENT_END: overview -->
 
@@ -46,7 +46,7 @@
 
 <!-- CONTENT_START: data_flow -->
 
-模型工具调用 → `memory_*` 工具 execute → 调用 `store.ts` 读写；用户命令 → command handler → 调用 `store.ts` 读写，并清除该会话索引快照缓存；`systemPrompt.context` 首次 pre-step 读取 `index.json` 渲染索引快照注入历史。
+模型工具调用 → `memory_*` 工具 execute → 调用 `store.ts` 读写；用户命令 → command handler → 调用 `store.ts` 读写，并清除该会话索引快照缓存；`agent/pre-step` 首次放行后读取 `index.json` 渲染索引快照，追加为 user-role 消息注入历史。
 
 <!-- CONTENT_END: data_flow -->
 
@@ -58,7 +58,7 @@
 
 - 工具 schema：`memory_save` / `memory_recall` / `memory_search` / `memory_delete`
 - 命令：`/memory_save <key> <content...>`、`/memory_delete <key>`
-- 上下文注入：`systemPrompt.context({ name: 'memory:index', order: 150 })`
+- 上下文注入：`ctx.on('agent/pre-step')` 追加 user-role 消息（`source.kind = 'memory-index'`）
 
 <!-- CONTENT_END: core_interfaces -->
 
@@ -103,6 +103,7 @@
 <!-- CONTENT_START: notes -->
 
 - 注入的索引快照按 session 缓存；工具路径 save/delete 不刷新，命令路径刷新
+- 索引注入失败时静默跳过（返回原 decision），不阻塞 pre-step 链路
 - 根 `index.js` 为 loader 导入兼容 shim（dev_inject_plugin 需要）
 
 <!-- CONTENT_END: notes -->

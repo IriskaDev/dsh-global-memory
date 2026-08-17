@@ -43,7 +43,8 @@ $DSH_HOME/memory/
 
 ## 安装
 
-内部使用：`dev_build_plugin` 构建 + `dev_inject_plugin` 注入，或 `dsh plugin add link:<本目录>`。
+- 内部开发调试：`dev_build_plugin` 构建 + `dev_inject_plugin` 运行时注入（免重启，无需改 profile）。
+- 常驻装配：`dsh plugin --profile <name> add link:<本目录>`（或 super-injector 的 `dev_install_package`）。该路径会把包写进 profile 的 `dsh.profile.bundles`，要求本包 `package.json` 具备 `dsh.bundle.patch` 声明并随仓库提供 `cordis.patch.yml`（本仓库已提供）。
 
 ## 隐私说明
 

@@ -1,0 +1,6 @@
+# dsh-global-memory bundle 层：插入宿主平面 global-memory 插件行。
+# 官方装配后由 bundles 在启动时挂载。
+- insert:
+    - id: global-memory
+      name: '@dsh-external/dsh-global-memory'
+      config: {}

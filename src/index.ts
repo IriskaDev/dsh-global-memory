@@ -2,7 +2,9 @@
  * @dsh-external/dsh-global-memory — 跨会话全局记忆插件（toolkit 形态）。
  *
  * 设计要点：
- * - 会话开始通过 systemPrompt.context（order 150，中后段）注入一次条目级索引快照；
+ * - 会话开始通过 agent/pre-step 注入一次条目级索引快照（user-role 消息，source.kind
+ *   为 "memory-index"）；不依赖 systemPrompt.context，因此不受 anchored-standard 等
+ *   preset 的 includeRuntimeContext: false 影响。
  *   快照按 session 缓存，工具路径 save/delete 不刷新，用户命令路径 save/delete 刷新。
  * - memory_* 工具不自动注入内容；只有模型主动调用时才产生当轮工具结果。
  * - memory_recall(key) 是唯一的全文查阅入口。
@@ -21,7 +23,7 @@ import {
 } from './store.js'
 
 export const name = '@dsh-external/dsh-global-memory'
-export const inject = ['tools', 'commands', 'systemPrompt']
+export const inject = ['tools', 'commands']
 
 export type Config = Record<string, never>
 
@@ -175,24 +177,26 @@ export function apply(ctx: Context, _config: Config): void {
     'memory_delete tool',
   )
 
-  // 2) 会话开始注入条目级索引快照（systemPrompt.context，order 150，中后段）
-  ctx.effect(
-    () =>
-      ctx.systemPrompt.context({
-        name: 'memory:index',
-        order: 150,
-        text: (assemblyContext: { agent?: unknown }) => {
-          const session = sessionOf(assemblyContext.agent)
-          if (!session) return ''
-          const cached = indexSnapshotCache.get(session)
-          if (cached !== undefined) return cached
-          const text = renderMemoryIndex(loadIndexSync(memoryDir()))
-          indexSnapshotCache.set(session, text)
-          return text
-        },
-      }),
-    'memory index context',
-  )
+  // 2) 会话开始注入条目级索引快照（agent/pre-step user-role 消息，不受 runtime context 抑制影响）
+  ctx.on('agent/pre-step', async (payload: { agent?: unknown }, next: () => Promise<any>) => {
+    const decision = await next()
+    try {
+      if (decision?.kind === 'reject' || !Array.isArray(decision?.messages)) return decision
+      const session = sessionOf(payload?.agent)
+      if (!session) return decision
+      if (indexSnapshotCache.has(session)) return decision
+      const text = renderMemoryIndex(loadIndexSync(memoryDir()))
+      indexSnapshotCache.set(session, text)
+      const message = {
+        role: 'user',
+        content: [{ type: 'text', text }],
+        source: { kind: 'memory-index', plugin: name },
+      }
+      return { ...decision, messages: [...decision.messages, message] }
+    } catch {
+      return decision
+    }
+  })
 
   // 3) 用户 slash 命令：直接落盘，不经 LLM，结果不进模型历史
   const commands = (ctx as Context & { commands: { register(definition: unknown): () => void } }).commands
