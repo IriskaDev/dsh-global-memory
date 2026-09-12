@@ -3,8 +3,8 @@
  *
  * 设计要点：
  * - 会话开始通过 agent/pre-step 注入一次条目级索引快照（user-role 消息，source.kind
- *   为 "memory-index"）；不依赖 systemPrompt.context，因此不受 anchored-standard 等
- *   preset 的 includeRuntimeContext: false 影响。
+ *   为 "plugin"）；不依赖 systemPrompt.context，因此不受 anchored-standard 等 preset
+ *   的 includeRuntimeContext: false 影响。
  *   快照按 session 缓存，工具路径 save/delete 不刷新，用户命令路径 save/delete 刷新。
  * - memory_* 工具不自动注入内容；只有模型主动调用时才产生当轮工具结果。
  * - memory_recall(key) 是唯一的全文查阅入口。
@@ -22,12 +22,7 @@ import {
   saveMemory,
   searchMemories,
 } from './store.js'
-
-declare module '@deepseek-ai/dsh-llm' {
-  interface MessageSourceMap {
-    'memory-index': { kind: 'memory-index'; plugin: string }
-  }
-}
+import { migrateLegacySessionSources } from './session-migration.js'
 
 export const name = '@dsh-external/dsh-global-memory'
 export const inject = ['tools', 'commands']
@@ -61,9 +56,12 @@ function clearSessionIndexCache(agent: unknown): void {
 }
 
 export function createMemoryIndexMessage(text: string) {
+  // DSH 的会话格式迁移会审计 message source.kind，只接受内建枚举；插件自定义
+  // kind 会被 v2→v3 迁移拒绝。索引消息因此统一声明为官方 plugin source，
+  // 插件身份由 plugin 字段保留。
   return createUserMessage({
     content: [{ type: 'text', text }],
-    source: { kind: 'memory-index', plugin: name },
+    source: { kind: 'plugin', plugin: name },
   })
 }
 
@@ -93,8 +91,26 @@ function parseKeyInput(rawInput: string): { key: string } | { error: string } {
   return { key }
 }
 
-export function apply(ctx: Context, _config: Config): void {
+export async function apply(ctx: Context, _config: Config): Promise<void> {
   void _config
+  // 在会话持久化读取旧 generation 之前，先规范本插件历史 source kind。
+  // 迁移失败不阻断插件加载，但会保留 marker 缺失以便下次重试。
+  try {
+    const migration = migrateLegacySessionSources(memoryDir())
+    if (migration.changedFiles > 0) {
+      ctx.logger?.info?.(
+        `dsh-global-memory: migrated ${migration.changedSources} legacy memory-index source(s) in ${migration.changedFiles} session file(s)`,
+      )
+    }
+    for (const error of migration.errors) {
+      ctx.logger?.warn?.(`dsh-global-memory: legacy session migration skipped ${error}`)
+    }
+  } catch (error) {
+    ctx.logger?.warn?.(
+      `dsh-global-memory: legacy session migration failed: ${error instanceof Error ? error.message : String(error)}`,
+    )
+  }
+
   // 1) 工具注册（ctx.effect：fiber dispose 自动注销）
   ctx.effect(
     () =>

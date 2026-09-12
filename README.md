@@ -46,6 +46,16 @@ $DSH_HOME/memory/
 - 内部开发调试：`dev_build_plugin` 构建 + `dev_inject_plugin` 运行时注入（免重启，无需改 profile）。
 - 常驻装配：`dsh plugin --profile <name> add link:<本目录>`（或 super-injector 的 `dev_install_package`）。该路径会把包写进 profile 的 `dsh.profile.bundles`，要求本包 `package.json` 具备 `dsh.bundle.patch` 声明并随仓库提供 `cordis.patch.yml`（本仓库已提供）。
 
+## 历史会话兼容迁移
+
+`0.0.4` 起，插件写入的索引消息使用 DSH 已审计的 `source.kind = "plugin"`。升级后首次加载插件时，会在任何会话被打开之前自动扫描 `$DSH_HOME/sessions`：
+
+- 只处理本插件历史上写出的 `source.kind = "memory-index"`；
+- 修改前为每个会话文件创建 `session.jsonl.zstd.bak-dsh-global-memory-1` 备份；
+- 已存在 `session.v3.jsonl.zstd` 的会话跳过；
+- 迁移完成状态记录在 `$DSH_HOME/memory/.legacy-session-source-migration.json`，重复启动不会重复修改；
+- 单个文件迁移失败时不会写完成标记，下次启动会重试。
+
 ## 隐私说明
 
 - 本插件只做显式记忆，不自动采集对话内容。
