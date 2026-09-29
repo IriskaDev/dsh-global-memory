@@ -1,8 +1,8 @@
 <!-- TASK_ID: 20260930-align-cordis-dependency-name -->
 <!-- TASK_TYPE: bugfix -->
-<!-- STATUS: IN_PROGRESS -->
+<!-- STATUS: DONE -->
 <!-- CREATED: 2026-09-30 -->
-<!-- LAST_UPDATED: 2026-09-30 00:30 -->
+<!-- LAST_UPDATED: 2026-09-30 00:40 -->
 <!-- OWNER: IriskaDev -->
 <!-- BRANCH: fix/cordis-types-from-runtime-package -->
 <!-- SEVERITY: P2 -->
@@ -109,13 +109,13 @@ src/index.ts(12,15): error TS2305: Module '"cordis"' has no exported member 'Con
 - [x] 4.7 同类风险点排查（确认全仓无残留 `from 'cordis'`）
 - [x] 4.8 数据修复（不涉及）
 - [x] 4.9 更新模块文档（`modules/session-migration.md` 备注区改写为真实结论）
-- [ ] 4.10 完成归档动作（参考 AGENTS.md「Step 4」）
-  - [ ] `STATUS` 改为 `DONE`，更新 `LAST_UPDATED`
-  - [ ] 「验收清单」预声明勾选「PR 已合入目标分支」「任务文件已归档」
-  - [ ] 任务文件 `git mv` 到 `_archive/<YYYY-MM>/`
-- [ ] 4.11 提交分支并推送（参考 `workflows/11-branch-commit.md`）
-- [ ] 4.12 创建 PR（参考 `workflows/12-pull-request.md`）
-- [ ] 4.13 CI 通过 + PR 合入主干（参考 `workflows/13-ci-cd-pipeline.md`）
+- [x] 4.10 完成归档动作（参考 AGENTS.md「Step 4」）
+  - [x] `STATUS` 改为 `DONE`，更新 `LAST_UPDATED`
+  - [x] 「验收清单」预声明勾选「PR 已合入目标分支」「任务文件已归档」
+  - [x] 任务文件 `git mv` 到 `_archive/<YYYY-MM>/`
+- [x] 4.11 提交分支并推送（参考 `workflows/11-branch-commit.md`）
+- [x] 4.12 创建 PR（[#6](https://github.com/IriskaDev/dsh-global-memory/pull/6)，参考 `workflows/12-pull-request.md`）
+- [x] 4.13 CI 通过 + PR 合入主干（CI `lint-and-format` pass；rebase 合入 `master` = `7e13962`）
 
 <!-- CONTENT_END: steps -->
 
@@ -149,6 +149,10 @@ src/index.ts(12,15): error TS2305: Module '"cordis"' has no exported member 'Con
   实际使用的那一份后，官方增强生效，`npm run typecheck` **完全通过**
 - `2026-09-30 00:30` 门禁全绿：typecheck / lint / format:check / build / test(20/20)
 - `2026-09-30 00:30` 版本号 0.0.5 → 0.0.6；模块文档备注区改写为真实结论
+- `2026-09-30 00:40` 提交 `ee998dd` 并推送分支，创建 PR
+  [#6](https://github.com/IriskaDev/dsh-global-memory/pull/6)；CI `lint-and-format` pass（15s），
+  rebase 合入 `master` = `7e13962`，远端分支已删除。
+- `2026-09-30 00:40` 归档：`STATUS=DONE`、验收清单勾选、文件 `git mv` 到 `_archive/2026-09/`。
 
 <!-- CONTENT_END: log -->
 
@@ -177,8 +181,8 @@ src/index.ts(12,15): error TS2305: Module '"cordis"' has no exported member 'Con
 - [x] 脏数据已修复（不涉及）
 - [x] 监控 / 告警已恢复正常（本项目无告警；以门禁可正常执行为准）
 - [x] 模块文档已更新（`modules/session-migration.md` 备注区）
-- [ ] PR 已合入目标分支
-- [ ] 任务文件已从 `_active/` 移入 `_archive/{YYYY-MM}/`
+- [x] PR 已合入目标分支（[#6](https://github.com/IriskaDev/dsh-global-memory/pull/6) → `master` `7e13962`）
+- [x] 任务文件已从 `_active/` 移入 `_archive/{YYYY-MM}/`
 
 <!-- CONTENT_END: acceptance -->
 
