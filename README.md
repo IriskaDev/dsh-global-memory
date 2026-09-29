@@ -2,6 +2,8 @@
 
 DSH Agent 跨会话全局记忆插件（toolkit 形态）。数据仅存本机 `$DSH_HOME/memory/`，不进入任何业务仓库，也不会上传到远端。
 
+> **runtime 兼容性**：DSH 0.1.x（会话格式 v3）与 0.2.x（会话格式 v4）均可使用。0.2.x 起注入消息必须使用 v4 producer-owned 的 `source.kind`（`plugin:<插件名>`），插件已按此写入；历史会话中的旧 kind 会在首次加载时自动修复（见「历史会话兼容迁移」）。
+
 ## 设计原则
 
 - **会话开始自动注入条目级索引**：每个会话首 step 自动注入一次全部记忆的轻量索引（按分类分组，列出 key 与 tags），位于 system prompt + tools 之后，不注入全文。
@@ -48,13 +50,18 @@ $DSH_HOME/memory/
 
 ## 历史会话兼容迁移
 
-`0.0.4` 起，插件写入的索引消息使用 DSH 已审计的 `source.kind = "plugin"`。升级后首次加载插件时，会在任何会话被打开之前自动扫描 `$DSH_HOME/sessions`：
+`0.0.5` 起，插件写入的索引消息使用 **v4 producer-owned** 的 `source.kind = "plugin:@dsh-external/dsh-global-memory"`。DSH 0.2.x 的会话格式 v4 原生准入**明确拒绝** `kind === "plugin"` 的包裹式 source（`format v4 message requires a producer-owned source kind`）；v3 runtime 也接纳命名空间形态，因此无需按版本分支。
 
-- 只处理本插件历史上写出的 `source.kind = "memory-index"`；
-- 修改前为每个会话文件创建 `session.jsonl.zstd.bak-dsh-global-memory-1` 备份；
-- 已存在 `session.v3.jsonl.zstd` 的会话跳过；
-- 迁移完成状态记录在 `$DSH_HOME/memory/.legacy-session-source-migration.json`，重复启动不会重复修改；
+升级后首次加载插件时，会在任何会话被打开之前自动扫描 `$DSH_HOME/sessions`：
+
+- 处理本插件历史上写出的两代载荷：`source.kind = "memory-index"`（≤ `0.0.3`）与 `{ kind: "plugin", plugin: <本插件名> }`（`0.0.4`），统一改写为 `plugin:@dsh-external/dsh-global-memory`；
+- 只改写 `plugin` 字段等于本插件名的记录，**其他插件**的 source 一律不动；
+- 每个会话目录只处理当前代次的活跃工件（`session.v4.jsonl.zstd` 等），旧代次备份保持原样；
+- 修改前为每个会话文件创建 `session.<ver>.jsonl.zstd.bak-dsh-global-memory-2` 备份；
+- 迁移完成状态记录在 `$DSH_HOME/memory/.legacy-session-source-migration.json`，重复启动不会重复修改（版本号提升后会自动重跑一次）；
 - 单个文件迁移失败时不会写完成标记，下次启动会重试。
+
+> ⚠️ `0.0.4` 的迁移会把 `memory-index` 改写成 `kind: "plugin"` 包裹形态。该形态在 v3 下正确，但在 DSH 0.2.x（会话格式 v4）下非法，会让**整轮运行失败**。`0.0.5` 的迁移（版本号 2）会修复这批历史文件。
 
 ## 隐私说明
 

@@ -2,7 +2,7 @@
 <!-- MODULE_GROUP: - -->
 <!-- INVOLVED_CHAINS: - -->
 <!-- STATUS: DONE -->
-<!-- LAST_ANALYZED: 2026-08-17 -->
+<!-- LAST_ANALYZED: 2026-09-30 -->
 <!-- ANALYZER_VERSION: 1.6 -->
 
 # 记忆工具注册模块（memory-tools）
@@ -22,7 +22,7 @@
 
 - `src/index.ts` 注册 `memory_save` / `memory_recall` / `memory_search` / `memory_delete` 四个工具
 - 注册 `/memory_save` / `/memory_delete` 用户命令：直接落盘，不经 LLM，结果不进模型历史
-- 通过 `agent/pre-step` 事件在每会话首 step 注入一次条目级索引快照（user-role 消息，`source.kind = "memory-index"`，不受 preset `includeRuntimeContext: false` 抑制）
+- 通过 `agent/pre-step` 事件在每会话首 step 注入一次条目级索引快照（user-role 消息，`source.kind = "plugin:@dsh-external/dsh-global-memory"`，不受 preset `includeRuntimeContext: false` 抑制）
 - 注入消息通过 `@deepseek-ai/dsh-llm` 的 `createUserMessage()` 创建，保证携带合法 `id`（DSH 会话加载强制校验）
 
 <!-- CONTENT_END: overview -->
@@ -59,7 +59,7 @@
 
 - 工具 schema：`memory_save` / `memory_recall` / `memory_search` / `memory_delete`
 - 命令：`/memory_save <key> <content...>`、`/memory_delete <key>`
-- 上下文注入：`ctx.on('agent/pre-step')` 追加 user-role 消息（`source.kind = 'memory-index'`）
+- 上下文注入：`ctx.on('agent/pre-step')` 追加 user-role 消息（`source.kind = 'plugin:@dsh-external/dsh-global-memory'`）
 
 <!-- CONTENT_END: core_interfaces -->
 
@@ -106,7 +106,13 @@
 
 - 注入的索引快照按 session id 缓存；工具路径 save/delete 不刷新，命令路径刷新
 - 注入消息必须携带合法 `id`：DSH 会话加载会校验 `user/message.id`，缺失会导致整会话无法加载
+- **注入消息的 `source.kind` 必须使用 v4 producer-owned 形态**（`plugin:<完整插件名>`）：
+  DSH 0.2.x 的会话格式 v4 原生准入直接拒绝 `kind === "plugin"` 的包裹式 source，报
+  `format v4 message requires a producer-owned source kind`。会话一旦已是 v4，插件再写
+  包裹式 source 会让**整轮运行失败**（历史会话不受影响，因 v3→v4 迁移会自行提升）。
+  v3/v4 runtime 都接纳 `plugin:<插件名>`，故无需按版本分支。
 - 索引注入失败时静默跳过（返回原 decision），不阻塞 pre-step 链路
+- 历史 `source.kind` 兼容修复见 `session-migration` 模块
 - 根 `index.js` 为 loader 导入兼容 shim（dev_inject_plugin 需要）
 
 <!-- CONTENT_END: notes -->

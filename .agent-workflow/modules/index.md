@@ -19,10 +19,11 @@
 
 ## 顶层模块索引表
 
-| 模块ID       | 名称             |  类型  | 职责概述                                                                                                 |   状态    |  时效   |  最后更新  | 关键词                                       | 文件链接                             |
-| ------------ | ---------------- | :----: | -------------------------------------------------------------------------------------------------------- | :-------: | :-----: | :--------: | -------------------------------------------- | ------------------------------------ |
-| memory-store | 记忆存储模块     | MODULE | 全局记忆的文件级持久化：`$DSH_HOME/memory/` 下 `m<NNNN>_<key>.json` + `index.json`，原子写入，索引可重建 | 🟢 已完成 | 🟢 有效 | 2026-08-17 | memory,store,index,persistence,file          | [memory-store.md](./memory-store.md) |
-| memory-tools | 记忆工具注册模块 | MODULE | 注册 4 个 `memory_*` 工具 + 2 个 slash 命令 + 会话首 step 自动注入条目级索引                             | 🟢 已完成 | 🟢 有效 | 2026-08-17 | memory,tools,commands,pre-step,index,context | [memory-tools.md](./memory-tools.md) |
+| 模块ID            | 名称                 |  类型  | 职责概述                                                                                                   |   状态    |  时效   |  最后更新  | 关键词                                       | 文件链接                                       |
+| ----------------- | -------------------- | :----: | ---------------------------------------------------------------------------------------------------------- | :-------: | :-----: | :--------: | -------------------------------------------- | ---------------------------------------------- |
+| memory-store      | 记忆存储模块         | MODULE | 全局记忆的文件级持久化：`$DSH_HOME/memory/` 下 `m<NNNN>_<key>.json` + `index.json`，原子写入，索引可重建   | 🟢 已完成 | 🟢 有效 | 2026-08-17 | memory,store,index,persistence,file          | [memory-store.md](./memory-store.md)           |
+| memory-tools      | 记忆工具注册模块     | MODULE | 注册 4 个 `memory_*` 工具 + 2 个 slash 命令 + 会话首 step 自动注入条目级索引                               | 🟢 已完成 | 🟢 有效 | 2026-09-30 | memory,tools,commands,pre-step,index,context | [memory-tools.md](./memory-tools.md)           |
+| session-migration | 会话 source 兼容迁移 | MODULE | 加载期修复本插件历史 `source.kind`（`memory-index` / `plugin` 包裹形态 → v4 producer-owned），带备份、幂等 | 🟢 已完成 | 🟢 有效 | 2026-09-30 | session,source,kind,migration,v4,zstd,compat | [session-migration.md](./session-migration.md) |
 
 **类型说明**：`GROUP`（大模块，含 ≥3 个子模块） · `MODULE`（顶层单模块，无子模块）
 **状态说明**：🔴 待分析 | 🟡 部分完成 | 🟢 已完成
