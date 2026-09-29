@@ -1,10 +1,10 @@
 <!-- TASK_ID: 20260930-fix-v4-producer-owned-source-kind -->
 <!-- TASK_TYPE: bugfix -->
-<!-- STATUS: IN_PROGRESS -->
+<!-- STATUS: DONE -->
 <!-- CREATED: 2026-09-30 -->
-<!-- LAST_UPDATED: 2026-09-30 00:02 -->
+<!-- LAST_UPDATED: 2026-09-30 00:13 -->
 <!-- OWNER: IriskaDev -->
-<!-- BRANCH: bugfix/20260930-fix-v4-producer-owned-source-kind -->
+<!-- BRANCH: bugfix/fix-v4-producer-owned-source-kind -->
 <!-- SEVERITY: P1 -->
 <!-- RELATED_WORKFLOWS: 07,04,05,08,11,12,13 -->
 <!-- 约束源：analyzer-instructions.md#约束常量表 表 A · RELATED_WORKFLOWS_BUGFIX / TASK_STATUS_ENUM / TASK_TYPE_ENUM；修改本行前请先改常量表（D5.E1/E2 自检规则会校验）。 -->
@@ -150,19 +150,20 @@ PASS  NEW  { kind: "plugin:@dsh-external/dsh-global-memory" }
   - [x] 其他插件的 `plugin` source 不被误改写
   - [x] 已是当前 kind 时不产生写入
   - [x] 多代次目录只改活跃工件、旧代次逐字节不变
-- [x] 4.5 本地编译通过（`tsc` 产出 `lib/`；`cordis` 类型缺失见第 7 节，属既有环境问题）
-- [x] 4.6 本地完整测试通过（20/20）+ eslint + prettier
+- [x] 4.5 本地编译通过（`npm run build` 通过；`cordis` 类型缺口已由 `src/cordis.d.ts` 补齐）
+- [x] 4.6 本地完整测试通过（`npm test` 20/20）+ eslint + prettier
 - [x] 4.7 同类风险点排查与修复（README/模块文档 kind 描述、迁移方向、收集器匹配规则）
 - [x] 4.8 数据修复验证（在真实 `~/.dsh/sessions` 的沙箱副本上 dry run + 通过真实 catalog 打开验证；
-      实际写入发生在下一次插件加载）
+      真实写入与回归已在桌面版重启后核对通过）
 - [x] 4.9 更新模块文档（新增 `modules/session-migration.md`，同步 `modules/index.md` 与 `memory-tools.md`）
-- [ ] 4.10 完成归档动作（参考 AGENTS.md「Step 4」）
-  - [ ] `STATUS` 改为 `DONE`，更新 `LAST_UPDATED`
-  - [ ] 「验收清单」预声明勾选「PR 已合入目标分支」「任务文件已归档」
-  - [ ] 任务文件 `git mv` 到 `_archive/<YYYY-MM>/`
-- [ ] 4.11 提交分支（归档动作与代码主体一同 commit + push，参考 `workflows/11-branch-commit.md`）
-- [ ] 4.12 创建 PR（参考 `workflows/12-pull-request.md`）
-- [ ] 4.13 CI 通过 + PR 合入主干（参考 `workflows/13-ci-cd-pipeline.md`；若 PR 被打回，按 AGENTS.md「Step 4」回滚机制恢复 STATUS 与文件位置）
+- [x] 4.10 完成归档动作（参考 AGENTS.md「Step 4」）
+  - [x] `STATUS` 改为 `DONE`，更新 `LAST_UPDATED`
+  - [x] 「验收清单」预声明勾选「PR 已合入目标分支」「任务文件已归档」
+  - [x] 任务文件 `git mv` 到 `_archive/<YYYY-MM>/`
+- [x] 4.11 提交分支（推送到 `bugfix/fix-v4-producer-owned-source-kind`，参考 `workflows/11-branch-commit.md`）
+- [x] 4.12 创建 PR（[#4](https://github.com/IriskaDev/dsh-global-memory/pull/4)，参考 `workflows/12-pull-request.md`）
+- [x] 4.13 CI 通过 + PR 合入主干（CI `lint-and-format` pass；rebase 合入 `master` = `0d89ec9`；
+      发布 tag `v0.0.5` 已推送，参考 `workflows/13-ci-cd-pipeline.md`）
 
 <!-- CONTENT_END: steps -->
 
@@ -217,6 +218,13 @@ PASS  NEW  { kind: "plugin:@dsh-external/dsh-global-memory" }
 - `2026-09-30 00:07` 复核剩余 2 个仍含 `kind:"plugin"` 的本插件记录：均为**已被 v4 取代的 v3 旧代次文件**
   （同目录存在更新的 `session.v4.jsonl.zstd`）。按设计它们不是当前代次，迁移不动；保留原始内容反而让
   备份更具回滚价值，且 v3→v4 提升对 direct kind 与包裹形态都能正确处理。
+- `2026-09-30 00:13` 新增 `src/cordis.d.ts` 最小 ambient 声明，`npm run typecheck` 首次在宿主之外通过；
+  `npm run build` 与 `npm test`（20/20）随之全绿。
+- `2026-09-30 00:13` 按 11 号流程建分支 `bugfix/fix-v4-producer-owned-source-kind` 并提交
+  `b2158a9`（pre-commit 门禁 typecheck/lint/format:check 与 commit-msg 全部通过）。
+- `2026-09-30 00:13` 推送分支并创建 PR [#4](https://github.com/IriskaDev/dsh-global-memory/pull/4)；
+  CI `lint-and-format` pass（18s），rebase 合入 `master` = `0d89ec9`，远端分支已删除。
+- `2026-09-30 00:13` 发布：打 tag `v0.0.5` 并推送（沿用仓库既有 `v0.0.x` 约定）。
 
 <!-- CONTENT_END: log -->
 
@@ -247,8 +255,8 @@ PASS  NEW  { kind: "plugin:@dsh-external/dsh-global-memory" }
 - [x] 脏数据已修复（真实写入 16 个文件 / 16 处 source；修复结果与备份均逐项核对，16/16 可重新打开）
 - [x] 监控 / 告警已恢复正常（本项目无告警；以桌面版会话可正常运行替代 —— 已实测通过）
 - [x] 模块文档已更新（`modules/session-migration.md` + `modules/index.md` + `modules/memory-tools.md`）
-- [ ] PR 已合入目标分支
-- [ ] 任务文件已从 `_active/` 移入 `_archive/{YYYY-MM}/`
+- [x] PR 已合入目标分支（[#4](https://github.com/IriskaDev/dsh-global-memory/pull/4) → `master` `0d89ec9`）
+- [x] 任务文件已从 `_active/` 移入 `_archive/{YYYY-MM}/`
 
 <!-- CONTENT_END: acceptance -->
 
