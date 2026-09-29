@@ -55,14 +55,23 @@ function clearSessionIndexCache(agent: unknown): void {
   if (sessionId) indexSnapshotCache.delete(sessionId)
 }
 
+/**
+ * v4 会话格式的 producer-owned source：`kind` 直接是生产者自己的名字，
+ * 不再使用 v3 的 `{ kind: 'plugin', plugin }` 包裹形态。
+ *
+ * 类型取自 `createUserMessage` 的实际入参，因此不需要额外 import，也不会随
+ * dsh-llm 主入口的导出面变化而失效。已发布的 dsh-llm 类型仍停留在 v3 的
+ * `{ kind: 'plugin', plugin }` 联合，故此处只在构造时断言一次。
+ */
+type MemoryIndexSource = Parameters<typeof createUserMessage>[0]['source']
+
 export function createMemoryIndexMessage(text: string) {
-  // DSH 的会话格式迁移会审计 message source.kind，只接受内建枚举；插件自定义
-  // kind 会被 v2→v3 迁移拒绝。索引消息因此统一声明为官方 plugin source，
-  // 插件身份由 plugin 字段保留。
-  return createUserMessage({
-    content: [{ type: 'text', text }],
-    source: { kind: 'plugin', plugin: name },
-  })
+  // DSH 会话格式 v4 的原生准入拒绝 `source.kind === "plugin"` 包裹式 source
+  // （"format v4 message requires a producer-owned source kind"）。v3→v4 迁移
+  // 会把三方插件 source 提升为 `plugin:<完整插件名>`，因此这里必须直接写提升后
+  // 的形态：v4 会话原生接纳，旧 runtime 也照样保留该 direct kind。
+  const source = { kind: `plugin:${name}` } as unknown as MemoryIndexSource
+  return createUserMessage({ content: [{ type: 'text', text }], source })
 }
 
 function formatRecord(record: NonNullable<Awaited<ReturnType<typeof readMemory>>>): string {
@@ -98,8 +107,11 @@ export async function apply(ctx: Context, _config: Config): Promise<void> {
   try {
     const migration = migrateLegacySessionSources(memoryDir())
     if (migration.changedFiles > 0) {
+      const kinds = Object.entries(migration.changedKinds)
+        .map(([kind, count]) => `${kind}×${count}`)
+        .join(', ')
       ctx.logger?.info?.(
-        `dsh-global-memory: migrated ${migration.changedSources} legacy memory-index source(s) in ${migration.changedFiles} session file(s)`,
+        `dsh-global-memory: migrated ${migration.changedSources} stale source kind(s) [${kinds}] in ${migration.changedFiles} session file(s)`,
       )
     }
     for (const error of migration.errors) {
