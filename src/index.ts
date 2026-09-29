@@ -3,13 +3,13 @@
  *
  * 设计要点：
  * - 会话开始通过 agent/pre-step 注入一次条目级索引快照（user-role 消息，source.kind
- *   为 "plugin"）；不依赖 systemPrompt.context，因此不受 anchored-standard 等 preset
- *   的 includeRuntimeContext: false 影响。
+ *   为 "plugin:<插件名>" 的 v4 producer-owned 形态）；不依赖 systemPrompt.context，
+ *   因此不受 anchored-standard 等 preset 的 includeRuntimeContext: false 影响。
  *   快照按 session 缓存，工具路径 save/delete 不刷新，用户命令路径 save/delete 刷新。
  * - memory_* 工具不自动注入内容；只有模型主动调用时才产生当轮工具结果。
  * - memory_recall(key) 是唯一的全文查阅入口。
  */
-import type { Context } from 'cordis'
+import type { Context } from '@deepseek-ai/cordis'
 import { createUserMessage } from '@deepseek-ai/dsh-llm'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import z from 'schemastery'

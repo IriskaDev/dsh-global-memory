@@ -116,10 +116,17 @@
   保留 v3 兄弟文件，会把所有修复都挡掉 —— 两者均已移除。
 - 迁移版本号见 `MIGRATION_VERSION`（当前 2；v1 的 marker 会自动过期重跑一次）。
 - zstd 多帧 + 逐行压缩是为兼容 DSH 的追加式写入；压缩参数必须带 checksum flag。
-- **`cordis` 类型缺口**：本包 peerDependency 写的是 `cordis`，但 DSH 实际提供 vendored fork
-  `@deepseek-ai/cordis`（4.0.4），公开 registry 的 `cordis@4.0.0-rc.x` 根入口不导出 `Context`，
-  导致 `npm run typecheck`（husky pre-commit 门禁）在宿主之外恒失败。现阶段由
-  `src/cordis.d.ts` 提供最小 ambient 声明补齐（只覆盖插件实际用到的成员；源码里仅有
-  `import type`，编译后完全擦除，不影响运行期）。根治方向见该文件头注释。
+- **`cordis` 依赖名已对齐运行期真实包**（v0.0.6）：DSH 提供的是 vendored 包
+  **`@deepseek-ai/cordis`**（已在 npm 发布，4.0.2 / 4.0.3 / 4.0.4），而公开 registry 上同名的
+  普通 `cordis@4.0.0-rc.x` 根入口**不导出 `Context`**，此前导致 `npm run typecheck`
+  （husky pre-commit 门禁）在宿主之外恒失败。现已在 `peerDependencies` 与源码 import 中统一改用
+  `@deepseek-ai/cordis`，并删除临时的 `src/cordis.d.ts` ambient 声明。
+- **`ctx.tools` / `agent/pre-step` 的类型不来自本仓库**：它们由 `@deepseek-ai/dsh-tools` 以
+  `declare module '@deepseek-ai/cordis'` 的 cordis 增强提供。因此本仓库的开发环境必须让
+  `@deepseek-ai/dsh-llm` / `dsh-tools` / `@deepseek-ai/cordis` 三者解析到**同一份** cordis 包，
+  否则增强会打到另一个模块实例上，`ctx.tools` 会报 `TS2339`（这是本仓库 devDependencies 用
+  符号链接指向宿主 profile 的原因）。
+- `ctx.commands` 仍以显式断言访问（`ctx as Context & { commands: ... }`）：`dsh-commands` 的增强
+  未随本包安装，且该服务只用到 `register` 一个方法，为它新增依赖不划算。
 
 <!-- CONTENT_END: notes -->
